@@ -1,0 +1,439 @@
+"use client"
+
+import { useCallback, useEffect, useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react"
+import {
+  DEFAULT_CATEGORIES,
+  formatCurrency,
+  getCategoryColor,
+  getCategoryLabel,
+} from "@/lib/constants"
+
+interface CategoryWithStats {
+  slug: string
+  count: number
+  total: number
+}
+
+interface CategoryDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onChanged: () => void
+}
+
+export function CategoryDialog({
+  open,
+  onOpenChange,
+  onChanged,
+}: CategoryDialogProps) {
+  const [categories, setCategories] = useState<CategoryWithStats[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [editingSlug, setEditingSlug] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState("")
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [isAdding, setIsAdding] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [addError, setAddError] = useState("")
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  const defaultSlugs = new Set(DEFAULT_CATEGORIES.map((c) => c.slug))
+
+  const fetchCategories = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch("/api/expenses/categories")
+      if (res.ok) {
+        const data: CategoryWithStats[] = await res.json()
+        setCategories(data)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (open) {
+      fetchCategories()
+      setEditingSlug(null)
+      setIsAdding(false)
+      setNewCategoryName("")
+      setAddError("")
+    }
+  }, [open, fetchCategories])
+
+  async function handleRename(from: string) {
+    const to = editValue.trim().toLowerCase()
+    if (!to || to === from) {
+      setEditingSlug(null)
+      return
+    }
+    setActionLoading(from)
+    try {
+      const res = await fetch("/api/expenses/categories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rename", from, to }),
+      })
+      if (res.ok) {
+        await fetchCategories()
+        onChanged()
+      }
+    } catch {
+      // ignore
+    } finally {
+      setActionLoading(null)
+      setEditingSlug(null)
+    }
+  }
+
+  async function handleDelete(category: string) {
+    setActionLoading(category)
+    setDeleteConfirm(null)
+    try {
+      const res = await fetch("/api/expenses/categories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", category }),
+      })
+      if (res.ok) {
+        await fetchCategories()
+        onChanged()
+      }
+    } catch {
+      // ignore
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  async function handleAdd() {
+    const slug = newCategoryName.trim().toLowerCase()
+    if (!slug) return
+    const allSlugs = new Set([
+      ...DEFAULT_CATEGORIES.map((c) => c.slug),
+      ...categories.map((c) => c.slug),
+    ])
+    if (allSlugs.has(slug)) {
+      setAddError("Category already exists")
+      return
+    }
+    setActionLoading("__add__")
+    setAddError("")
+    try {
+      const res = await fetch("/api/expenses/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: slug }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        setAddError(err.error ?? "Failed to create")
+        return
+      }
+      setNewCategoryName("")
+      setIsAdding(false)
+      await fetchCategories()
+      onChanged()
+    } catch {
+      setAddError("Failed to create category")
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const catsWithData = categories.filter((c) => c.count > 0)
+  const emptyCustom = categories.filter(
+    (c) => c.count === 0 && !defaultSlugs.has(c.slug)
+  )
+  const usedSlugs = new Set(categories.map((c) => c.slug))
+  const emptyDefaults = DEFAULT_CATEGORIES.filter((c) => !usedSlugs.has(c.slug))
+
+  function renderEditRow(slug: string, color: string) {
+    return (
+      <div className="flex items-center gap-2 rounded-2xl ring-1 ring-foreground/10 px-3 py-2">
+        <span
+          className="size-2.5 shrink-0 rounded-full"
+          style={{ backgroundColor: color }}
+        />
+        <Input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleRename(slug)
+            if (e.key === "Escape") setEditingSlug(null)
+          }}
+          className="h-7 flex-1"
+          autoFocus
+          disabled={actionLoading === slug}
+        />
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => handleRename(slug)}
+          disabled={actionLoading === slug}
+          aria-label="Confirm rename"
+        >
+          <Check className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => setEditingSlug(null)}
+          disabled={actionLoading === slug}
+          aria-label="Cancel rename"
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Manage Categories</DialogTitle>
+          <DialogDescription>
+            Rename or remove categories. Deleted categories move expenses to
+            &ldquo;Other&rdquo;.
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+            Loading...
+          </div>
+        ) : (
+          <div className="-mx-1 max-h-[60vh] space-y-1 overflow-y-auto px-1">
+            {/* Add new category */}
+            {isAdding ? (
+              <div className="flex items-center gap-2 rounded-2xl ring-1 ring-foreground/10 px-3 py-2">
+                <span className="size-2.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                <Input
+                  value={newCategoryName}
+                  onChange={(e) => {
+                    setNewCategoryName(e.target.value)
+                    setAddError("")
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAdd()
+                    if (e.key === "Escape") {
+                      setIsAdding(false)
+                      setNewCategoryName("")
+                      setAddError("")
+                    }
+                  }}
+                  placeholder="Category name"
+                  className="h-7 flex-1"
+                  autoFocus
+                  disabled={actionLoading === "__add__"}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={handleAdd}
+                  disabled={actionLoading === "__add__"}
+                  aria-label="Confirm add"
+                >
+                  <Check className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => {
+                    setIsAdding(false)
+                    setNewCategoryName("")
+                    setAddError("")
+                  }}
+                  aria-label="Cancel add"
+                >
+                  <X className="size-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsAdding(true)}
+                className="flex w-full items-center gap-2 rounded-2xl border border-dashed px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              >
+                <Plus className="size-4" />
+                Add custom category
+              </button>
+            )}
+            {addError && (
+              <p className="px-3 text-xs text-destructive">{addError}</p>
+            )}
+
+            {catsWithData.map((cat) => {
+              const isDefault = defaultSlugs.has(cat.slug)
+              const label = getCategoryLabel(cat.slug)
+              const color = getCategoryColor(cat.slug)
+
+              if (editingSlug === cat.slug) {
+                return <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
+              }
+
+              return (
+                <div
+                  key={cat.slug}
+                  className="flex items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
+                >
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="flex-1 truncate text-sm font-medium">
+                    {label}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                    {cat.count} · {formatCurrency(cat.total)}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="text-muted-foreground"
+                    onClick={() => {
+                      setEditingSlug(cat.slug)
+                      setEditValue(isDefault ? label : cat.slug)
+                    }}
+                    disabled={actionLoading === cat.slug}
+                    aria-label={`Rename ${label}`}
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                  {!isDefault && (
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="text-destructive"
+                      onClick={() => setDeleteConfirm(cat.slug)}
+                      disabled={actionLoading === cat.slug}
+                      aria-label={`Delete ${label}`}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              )
+            })}
+
+            {emptyCustom.map((cat) => {
+              const label = getCategoryLabel(cat.slug)
+              const color = getCategoryColor(cat.slug)
+
+              if (editingSlug === cat.slug) {
+                return <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
+              }
+
+              return (
+                <div
+                  key={cat.slug}
+                  className="flex items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
+                >
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="flex-1 truncate text-sm font-medium">
+                    {label}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    No expenses
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="text-muted-foreground"
+                    onClick={() => {
+                      setEditingSlug(cat.slug)
+                      setEditValue(cat.slug)
+                    }}
+                    disabled={actionLoading === cat.slug}
+                    aria-label={`Rename ${label}`}
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="text-destructive"
+                    onClick={() => setDeleteConfirm(cat.slug)}
+                    disabled={actionLoading === cat.slug}
+                    aria-label={`Delete ${label}`}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              )
+            })}
+
+            {emptyDefaults.length > 0 && (
+              <>
+                {catsWithData.length > 0 && <div className="my-2 border-t" />}
+                {emptyDefaults.map((cat) => (
+                  <div
+                    key={cat.slug}
+                    className="flex items-center gap-2 rounded-2xl px-3 py-2 opacity-50"
+                  >
+                    <span
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: getCategoryColor(cat.slug) }}
+                    />
+                    <span className="flex-1 truncate text-sm">{cat.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      No expenses
+                    </span>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {catsWithData.length === 0 && emptyDefaults.length === 0 && (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No categories yet. Add an expense to get started.
+              </div>
+            )}
+          </div>
+        )}
+
+        {deleteConfirm && (
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2">
+            <p className="text-sm">
+              Delete <strong>{getCategoryLabel(deleteConfirm)}</strong>? Its
+              expenses will move to &ldquo;Other&rdquo;.
+            </p>
+            <div className="flex shrink-0 gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDeleteConfirm(null)}
+                disabled={actionLoading === deleteConfirm}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDelete(deleteConfirm)}
+                disabled={actionLoading === deleteConfirm}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}

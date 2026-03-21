@@ -80,6 +80,16 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    /* Category colors */
+    --cat-food: oklch(0.75 0.15 65);
+    --cat-transport: oklch(0.62 0.17 250);
+    --cat-entertainment: oklch(0.60 0.19 295);
+    --cat-shopping: oklch(0.68 0.17 350);
+    --cat-bills: oklch(0.55 0.04 250);
+    --cat-health: oklch(0.63 0.2 20);
+    --cat-education: oklch(0.68 0.13 175);
+    --cat-other: oklch(0.60 0.02 75);
 }
 
 .dark {
@@ -114,6 +124,16 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+
+    /* Category colors — brighter in dark mode */
+    --cat-food: oklch(0.78 0.14 65);
+    --cat-transport: oklch(0.68 0.16 250);
+    --cat-entertainment: oklch(0.66 0.18 295);
+    --cat-shopping: oklch(0.72 0.16 350);
+    --cat-bills: oklch(0.60 0.04 250);
+    --cat-health: oklch(0.68 0.18 20);
+    --cat-education: oklch(0.72 0.12 175);
+    --cat-other: oklch(0.65 0.02 75);
 }
 
 @layer base {
@@ -124,6 +144,42 @@
     @apply bg-background text-foreground;
     }
   html {
-    @apply font-sans;
+    @apply scroll-smooth font-sans;
     }
+}
+
+/* Expense list stagger animation */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-children > * {
+  animation: slide-in 0.2s ease-out both;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 30ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 90ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 210ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 270ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-children > * {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
