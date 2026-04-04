@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { CalendarIcon } from "lucide-react"
+import { format, parse } from "date-fns"
 import {
   Dialog,
   DialogContent,
@@ -13,6 +15,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Select,
   SelectContent,
@@ -20,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import type { CategoryWithStats, Expense } from "@/lib/types"
 import type { ExpenseFormData } from "@/lib/schemas"
 
@@ -46,6 +55,7 @@ export function ExpenseDialog({
   expense,
   categories,
 }: ExpenseDialogProps) {
+  const isDesktop = useMediaQuery("(min-width: 640px)")
   const [form, setForm] = useState<ExpenseFormData>(INITIAL_FORM)
   const [isCustomCategory, setIsCustomCategory] = useState(false)
   const [customCategoryInput, setCustomCategoryInput] = useState("")
@@ -181,7 +191,7 @@ export function ExpenseDialog({
             <div className="space-y-2">
               <Label htmlFor="amount">Amount (AUD)</Label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
                   $
                 </span>
                 <Input
@@ -206,14 +216,51 @@ export function ExpenseDialog({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-                aria-invalid={!!errors.date}
-              />
+              <Label>Date</Label>
+              {isDesktop ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      aria-invalid={!!errors.date}
+                    >
+                      <CalendarIcon className="size-4 text-muted-foreground" />
+                      {form.date
+                        ? format(
+                            parse(form.date, "yyyy-MM-dd", new Date()),
+                            "d MMM yyyy"
+                          )
+                        : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        form.date
+                          ? parse(form.date, "yyyy-MM-dd", new Date())
+                          : undefined
+                      }
+                      onSelect={(date) => {
+                        if (date) {
+                          setForm({
+                            ...form,
+                            date: format(date, "yyyy-MM-dd"),
+                          })
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Input
+                  type="date"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  aria-invalid={!!errors.date}
+                />
+              )}
               {errors.date && (
                 <p className="text-xs text-destructive">{errors.date}</p>
               )}

@@ -1,6 +1,7 @@
 "use client"
 
-import { Plus, Tag } from "lucide-react"
+import { LayoutGrid, Plus, Tag } from "lucide-react"
+import { getIconComponent } from "@/lib/category-icon-map"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -36,18 +37,36 @@ export function ExpenseToolbar({
     <div className="flex flex-wrap items-center gap-2">
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
         <SelectTrigger
-          className="w-full sm:w-[160px]"
+          className="w-full sm:w-[190px]"
           aria-label="Filter by category"
         >
           <SelectValue placeholder="All categories" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All categories</SelectItem>
-          {categories.map((cat) => (
-            <SelectItem key={cat.slug} value={cat.slug}>
-              {cat.label}
-            </SelectItem>
-          ))}
+          <SelectItem value="all">
+            <LayoutGrid className="size-4 shrink-0 text-muted-foreground" />
+            All categories
+          </SelectItem>
+          {categories.map((cat) => {
+            const Icon = getIconComponent(cat.icon)
+            return (
+              <SelectItem
+                key={cat.slug}
+                value={cat.slug}
+                style={
+                  {
+                    "--item-focus-bg": `color-mix(in oklch, ${cat.color} 12%, transparent)`,
+                  } as React.CSSProperties
+                }
+              >
+                <Icon
+                  className="size-4 shrink-0"
+                  style={{ color: cat.color }}
+                />
+                {cat.label}
+              </SelectItem>
+            )
+          })}
         </SelectContent>
       </Select>
 
@@ -68,9 +87,13 @@ export function ExpenseToolbar({
         </SelectContent>
       </Select>
 
-      <Button variant="outline" onClick={onManageCategories}>
+      <Button
+        variant="outline"
+        onClick={onManageCategories}
+        className="w-full sm:w-auto"
+      >
         <Tag className="size-4" />
-        <span className="hidden sm:inline">Categories</span>
+        Categories
       </Button>
 
       <div className="hidden flex-1 sm:block" />
