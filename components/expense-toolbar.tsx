@@ -76,7 +76,7 @@ export function ExpenseToolbar({
       <div className="hidden flex-1 sm:block" />
 
       <Button onClick={onAdd} className="w-full sm:w-auto">
-        <Plus className="mr-1.5 size-4" />
+        <Plus />
         Add Expense
       </Button>
     </div>
