@@ -1,0 +1,175 @@
+{
+  "expenses": [
+    {
+      "_id": "69be7b1a4a186feb7a9be54b",
+      "title": "Lunch",
+      "category": "food",
+      "amount": 16.6,
+      "date": "2026-03-21",
+      "description": "Lunch description",
+      "createdAt": "2026-03-21T11:03:54.707Z",
+      "updatedAt": "2026-04-04T07:57:01.335Z"
+    },
+    {
+      "_id": "69be7b464a186feb7a9be54c",
+      "title": "Brekkie",
+      "category": "food",
+      "amount": 29,
+      "date": "2026-03-17",
+      "description": "tets",
+      "createdAt": "2026-03-21T11:04:38.668Z",
+      "updatedAt": "2026-03-21T11:04:38.668Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a6e",
+      "title": "Weekly groceries",
+      "category": "food",
+      "amount": 82.5,
+      "date": "2026-03-01",
+      "description": "Woolworths Ultimo",
+      "createdAt": "2026-03-01T10:00:00.000Z",
+      "updatedAt": "2026-03-01T10:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a6f",
+      "title": "Opal card top-up",
+      "category": "transport",
+      "amount": 50,
+      "date": "2026-03-02",
+      "description": "Monthly transport pass",
+      "createdAt": "2026-03-02T08:30:00.000Z",
+      "updatedAt": "2026-03-02T08:30:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a70",
+      "title": "Netflix subscription",
+      "category": "entertainment",
+      "amount": 16.99,
+      "date": "2026-03-03",
+      "description": "Monthly streaming",
+      "createdAt": "2026-03-03T00:00:00.000Z",
+      "updatedAt": "2026-03-03T00:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a71",
+      "title": "Electricity bill",
+      "category": "bills",
+      "amount": 145.3,
+      "date": "2026-03-05",
+      "description": "Q1 electricity",
+      "createdAt": "2026-03-05T09:00:00.000Z",
+      "updatedAt": "2026-03-05T09:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a72",
+      "title": "Textbook - Software Engineering",
+      "category": "education",
+      "amount": 65,
+      "date": "2026-03-07",
+      "description": "Required for FSD course",
+      "createdAt": "2026-03-07T14:00:00.000Z",
+      "updatedAt": "2026-03-07T14:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a73",
+      "title": "Coffee with friends",
+      "category": "food",
+      "amount": 12.8,
+      "date": "2026-03-08",
+      "description": "Campos Coffee UTS",
+      "createdAt": "2026-03-08T11:00:00.000Z",
+      "updatedAt": "2026-03-08T11:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a74",
+      "title": "Running shoes",
+      "category": "shopping",
+      "amount": 129.95,
+      "date": "2026-03-10",
+      "description": "Nike outlet sale",
+      "createdAt": "2026-03-10T15:30:00.000Z",
+      "updatedAt": "2026-03-10T15:30:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a75",
+      "title": "GP visit",
+      "category": "health",
+      "amount": 38.5,
+      "date": "2026-03-12",
+      "description": "Gap payment after Medicare",
+      "createdAt": "2026-03-12T10:00:00.000Z",
+      "updatedAt": "2026-03-12T10:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a76",
+      "title": "Lunch at Thai restaurant",
+      "category": "food",
+      "amount": 18.9,
+      "date": "2026-03-14",
+      "description": "Chat Thai Broadway",
+      "createdAt": "2026-03-14T12:30:00.000Z",
+      "updatedAt": "2026-03-14T12:30:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a77",
+      "title": "Internet bill",
+      "category": "bills",
+      "amount": 79,
+      "date": "2026-03-15",
+      "description": "Monthly NBN plan",
+      "createdAt": "2026-03-15T00:00:00.000Z",
+      "updatedAt": "2026-03-15T00:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a78",
+      "title": "Movie tickets",
+      "category": "entertainment",
+      "amount": 28,
+      "date": "2026-03-16",
+      "description": "Event Cinemas George St x2",
+      "createdAt": "2026-03-16T18:00:00.000Z",
+      "updatedAt": "2026-03-16T18:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a79",
+      "title": "Weekly groceries",
+      "category": "food",
+      "amount": 76.4,
+      "date": "2026-03-18",
+      "description": "Coles Broadway",
+      "createdAt": "2026-03-18T10:00:00.000Z",
+      "updatedAt": "2026-03-18T10:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a7a",
+      "title": "Uber to airport",
+      "category": "transport",
+      "amount": 42,
+      "date": "2026-02-15",
+      "description": "SYD domestic terminal",
+      "createdAt": "2026-02-15T06:00:00.000Z",
+      "updatedAt": "2026-02-15T06:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a7b",
+      "title": "February groceries",
+      "category": "food",
+      "amount": 95.2,
+      "date": "2026-02-20",
+      "description": "Woolworths",
+      "createdAt": "2026-02-20T10:00:00.000Z",
+      "updatedAt": "2026-02-20T10:00:00.000Z"
+    },
+    {
+      "_id": "69be8633fb9ca022058b5a7c",
+      "title": "Phone case",
+      "category": "shopping",
+      "amount": 35,
+      "date": "2026-02-22",
+      "description": "Amazon AU",
+      "createdAt": "2026-02-22T14:00:00.000Z",
+      "updatedAt": "2026-02-22T14:00:00.000Z"
+    }
+  ],
+  "categories": []
+}

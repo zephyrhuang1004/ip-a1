@@ -21,7 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { formatCurrency, getCategoryLabel, getCategoryColor } from "@/lib/constants"
+import {
+  formatCurrency,
+  getCategoryLabel,
+  getCategoryColor,
+} from "@/lib/constants"
 import type { Expense } from "@/lib/types"
 
 interface ExpenseItemProps {
@@ -56,13 +60,13 @@ export function ExpenseItem({ expense, onEdit, onDelete }: ExpenseItemProps) {
   const catColor = getCategoryColor(expense.category)
 
   return (
-    <div
-      className="group flex items-center gap-3 rounded-2xl border-l-[3px] border-transparent p-3 ring-1 ring-foreground/10 transition-colors duration-150 hover:bg-accent/50"
-      style={{ borderLeftColor: catColor }}
-    >
+    <div className="group flex items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/10 transition-colors duration-150 hover:bg-accent/50">
       <div
         className="flex size-8 shrink-0 items-center justify-center rounded-xl"
-        style={{ color: catColor, backgroundColor: `color-mix(in oklch, ${catColor} 12%, transparent)` }}
+        style={{
+          color: catColor,
+          backgroundColor: `color-mix(in oklch, ${catColor} 12%, transparent)`,
+        }}
       >
         <CategoryIcon category={expense.category} />
       </div>

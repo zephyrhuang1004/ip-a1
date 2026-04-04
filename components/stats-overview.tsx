@@ -8,9 +8,10 @@ import type { ExpenseStats } from "@/lib/types"
 interface StatsOverviewProps {
   stats: ExpenseStats
   isLoading: boolean
+  error?: string | null
 }
 
-export function StatsOverview({ stats, isLoading }: StatsOverviewProps) {
+export function StatsOverview({ stats, isLoading, error }: StatsOverviewProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -18,6 +19,35 @@ export function StatsOverview({ stats, isLoading }: StatsOverviewProps) {
         <div className="grid grid-cols-2 gap-3">
           <Skeleton className="h-[52px]" />
           <Skeleton className="h-[52px]" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <div className="px-1">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Total Spent
+          </p>
+          <p className="text-3xl font-bold tracking-tight tabular-nums text-muted-foreground sm:text-4xl">
+            —
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Card size="sm">
+            <CardContent>
+              <p className="text-[11px] font-medium text-muted-foreground">This Month</p>
+              <p className="text-base font-semibold text-muted-foreground">—</p>
+            </CardContent>
+          </Card>
+          <Card size="sm">
+            <CardContent>
+              <p className="text-[11px] font-medium text-muted-foreground">Top Category</p>
+              <p className="text-base font-semibold text-muted-foreground">—</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

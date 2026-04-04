@@ -161,7 +161,7 @@ export function CategoryDialog({
 
   function renderEditRow(slug: string, color: string) {
     return (
-      <div className="flex items-center gap-2 rounded-2xl ring-1 ring-foreground/10 px-3 py-2">
+      <div className="flex min-h-[44px] items-center gap-2 rounded-2xl bg-muted px-3 py-2">
         <span
           className="size-2.5 shrink-0 rounded-full"
           style={{ backgroundColor: color }}
@@ -173,7 +173,7 @@ export function CategoryDialog({
             if (e.key === "Enter") handleRename(slug)
             if (e.key === "Escape") setEditingSlug(null)
           }}
-          className="h-7 flex-1"
+          className="h-7 flex-1 text-sm font-medium"
           autoFocus
           disabled={actionLoading === slug}
         />
@@ -218,7 +218,7 @@ export function CategoryDialog({
           <div className="-mx-1 max-h-[60vh] space-y-1 overflow-y-auto px-1">
             {/* Add new category */}
             {isAdding ? (
-              <div className="flex items-center gap-2 rounded-2xl ring-1 ring-foreground/10 px-3 py-2">
+              <div className="flex min-h-[44px] items-center gap-2 rounded-2xl bg-muted px-3 py-2">
                 <span className="size-2.5 shrink-0 rounded-full bg-muted-foreground/40" />
                 <Input
                   value={newCategoryName}
@@ -235,7 +235,7 @@ export function CategoryDialog({
                     }
                   }}
                   placeholder="Category name"
-                  className="h-7 flex-1"
+                  className="h-7 flex-1 text-sm font-medium"
                   autoFocus
                   disabled={actionLoading === "__add__"}
                 />
@@ -265,7 +265,7 @@ export function CategoryDialog({
               <button
                 type="button"
                 onClick={() => setIsAdding(true)}
-                className="flex w-full items-center gap-2 rounded-2xl border border-dashed px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                className="flex min-h-[44px] w-full items-center gap-2 rounded-2xl border border-dashed px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
               >
                 <Plus className="size-4" />
                 Add custom category
@@ -281,13 +281,15 @@ export function CategoryDialog({
               const color = getCategoryColor(cat.slug)
 
               if (editingSlug === cat.slug) {
-                return <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
+                return (
+                  <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
+                )
               }
 
               return (
                 <div
                   key={cat.slug}
-                  className="flex items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
+                  className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
                 >
                   <span
                     className="size-2.5 shrink-0 rounded-full"
@@ -299,19 +301,21 @@ export function CategoryDialog({
                   <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                     {cat.count} · {formatCurrency(cat.total)}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="text-muted-foreground"
-                    onClick={() => {
-                      setEditingSlug(cat.slug)
-                      setEditValue(isDefault ? label : cat.slug)
-                    }}
-                    disabled={actionLoading === cat.slug}
-                    aria-label={`Rename ${label}`}
-                  >
-                    <Pencil className="size-3.5" />
-                  </Button>
+                  {!isDefault && (
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="text-muted-foreground"
+                      onClick={() => {
+                        setEditingSlug(cat.slug)
+                        setEditValue(cat.slug)
+                      }}
+                      disabled={actionLoading === cat.slug}
+                      aria-label={`Rename ${label}`}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                  )}
                   {!isDefault && (
                     <Button
                       variant="ghost"
@@ -333,13 +337,15 @@ export function CategoryDialog({
               const color = getCategoryColor(cat.slug)
 
               if (editingSlug === cat.slug) {
-                return <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
+                return (
+                  <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
+                )
               }
 
               return (
                 <div
                   key={cat.slug}
-                  className="flex items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
+                  className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
                 >
                   <span
                     className="size-2.5 shrink-0 rounded-full"
@@ -384,7 +390,7 @@ export function CategoryDialog({
                 {emptyDefaults.map((cat) => (
                   <div
                     key={cat.slug}
-                    className="flex items-center gap-2 rounded-2xl px-3 py-2 opacity-50"
+                    className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 opacity-50"
                   >
                     <span
                       className="size-2.5 shrink-0 rounded-full"

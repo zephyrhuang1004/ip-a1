@@ -35,7 +35,10 @@ export function ExpenseToolbar({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-full sm:w-[160px]">
+        <SelectTrigger
+          className="w-full sm:w-[160px]"
+          aria-label="Filter by category"
+        >
           <SelectValue placeholder="All categories" />
         </SelectTrigger>
         <SelectContent>
@@ -54,7 +57,10 @@ export function ExpenseToolbar({
       </Select>
 
       <Select value={monthFilter} onValueChange={onMonthChange}>
-        <SelectTrigger className="w-full sm:w-[140px]">
+        <SelectTrigger
+          className="w-full sm:w-[140px]"
+          aria-label="Filter by month"
+        >
           <SelectValue placeholder="All months" />
         </SelectTrigger>
         <SelectContent>

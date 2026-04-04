@@ -145,6 +145,10 @@
     }
   html {
     @apply scroll-smooth font-sans;
+    scrollbar-width: none;
+    }
+  html::-webkit-scrollbar {
+    display: none;
     }
 }
 

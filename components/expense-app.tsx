@@ -26,6 +26,7 @@ export function ExpenseApp() {
   const {
     expenses,
     isLoading,
+    error: expensesError,
     create,
     update,
     remove,
@@ -34,7 +35,12 @@ export function ExpenseApp() {
     category: categoryFilter === "all" ? undefined : categoryFilter,
     month: monthFilter === "all" ? undefined : monthFilter,
   })
-  const { stats, isLoading: statsLoading, refetch: refetchStats } = useStats()
+  const {
+    stats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useStats()
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -120,11 +126,15 @@ export function ExpenseApp() {
   }
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-2xl flex-col p-4 sm:p-6">
+    <main className="mx-auto flex min-h-svh max-w-4xl flex-col p-4 sm:p-6">
       <Header />
 
       <section className="mt-6">
-        <StatsOverview stats={stats} isLoading={statsLoading} />
+        <StatsOverview
+          stats={stats}
+          isLoading={statsLoading}
+          error={statsError}
+        />
       </section>
 
       <Tabs defaultValue="expenses" className="mt-8 flex-1">
@@ -151,9 +161,11 @@ export function ExpenseApp() {
           <ExpenseList
             expenses={expenses}
             isLoading={isLoading}
+            error={expensesError}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
             onAdd={handleAdd}
+            onRetry={refetchExpenses}
           />
         </TabsContent>
 
@@ -199,6 +211,6 @@ export function ExpenseApp() {
       </footer>
 
       <Toaster richColors position="bottom-center" />
-    </div>
+    </main>
   )
 }
