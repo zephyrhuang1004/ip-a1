@@ -169,168 +169,258 @@
       "description": "Amazon AU",
       "createdAt": "2026-02-22T14:00:00.000Z",
       "updatedAt": "2026-02-22T14:00:00.000Z"
+    },
+    {
+      "_id": "69d0e5ae4fb19c16088abd39",
+      "title": "Lunch at Mamak",
+      "category": "food",
+      "amount": 18.5,
+      "date": "2026-04-01",
+      "description": "Nasi goreng + teh tarik",
+      "createdAt": "2026-04-04T10:19:26.116Z",
+      "updatedAt": "2026-04-04T10:19:26.116Z"
+    },
+    {
+      "_id": "69d0e5ae4fb19c16088abd3a",
+      "title": "Weekly groceries",
+      "category": "food",
+      "amount": 67.3,
+      "date": "2026-04-02",
+      "description": "Woolworths Broadway",
+      "createdAt": "2026-04-04T10:19:26.116Z",
+      "updatedAt": "2026-04-04T10:19:26.116Z"
+    },
+    {
+      "_id": "69d0e5ae4fb19c16088abd3b",
+      "title": "Opal card top-up",
+      "category": "transport",
+      "amount": 30,
+      "date": "2026-04-01",
+      "description": "Weekly travel",
+      "createdAt": "2026-04-04T10:19:26.116Z",
+      "updatedAt": "2026-04-04T10:19:26.116Z"
+    },
+    {
+      "_id": "69d0e5ae4fb19c16088abd3c",
+      "title": "Coffee",
+      "category": "food",
+      "amount": 6.5,
+      "date": "2026-04-03",
+      "description": "Flat white at Campos",
+      "createdAt": "2026-04-04T10:19:26.116Z",
+      "updatedAt": "2026-04-04T10:19:26.116Z"
+    },
+    {
+      "_id": "69d0e5ae4fb19c16088abd3d",
+      "title": "Spotify subscription",
+      "category": "entertainment",
+      "amount": 12.99,
+      "date": "2026-04-01",
+      "description": "Monthly music",
+      "createdAt": "2026-04-04T10:19:26.116Z",
+      "updatedAt": "2026-04-04T10:19:26.116Z"
+    },
+    {
+      "_id": "69d0e5ae4fb19c16088abd3e",
+      "title": "Pharmacy",
+      "category": "health",
+      "amount": 15.9,
+      "date": "2026-04-04",
+      "description": "Vitamins",
+      "createdAt": "2026-04-04T10:19:26.116Z",
+      "updatedAt": "2026-04-04T10:19:26.116Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b43842564",
+      "title": "Bubble tea",
+      "category": "food",
+      "amount": 8.5,
+      "date": "2026-04-04",
+      "description": "Gong Cha UTS",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b43842565",
+      "title": "Notebook refill",
+      "category": "education",
+      "amount": 12,
+      "date": "2026-04-04",
+      "description": "Officeworks",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b43842566",
+      "title": "Lunch at food court",
+      "category": "food",
+      "amount": 14.8,
+      "date": "2026-04-03",
+      "description": "Thai Express Broadway",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b43842567",
+      "title": "Uber home",
+      "category": "transport",
+      "amount": 18.5,
+      "date": "2026-04-03",
+      "description": "Late night ride",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b43842568",
+      "title": "Morning coffee",
+      "category": "food",
+      "amount": 5.8,
+      "date": "2026-04-02",
+      "description": "Campos Coffee",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b43842569",
+      "title": "Phone screen protector",
+      "category": "shopping",
+      "amount": 15,
+      "date": "2026-04-02",
+      "description": "JB Hi-Fi",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b4384256a",
+      "title": "Gym membership",
+      "category": "health",
+      "amount": 59,
+      "date": "2026-04-01",
+      "description": "Fitness First monthly",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b4384256b",
+      "title": "Dinner with friends",
+      "category": "food",
+      "amount": 32,
+      "date": "2026-04-01",
+      "description": "Korean BBQ Strathfield",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b4384256c",
+      "title": "Haircut",
+      "category": "shopping",
+      "amount": 35,
+      "date": "2026-03-28",
+      "description": "Barber on George St",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b4384256d",
+      "title": "Bus pass reload",
+      "category": "transport",
+      "amount": 20,
+      "date": "2026-03-25",
+      "description": "Opal auto top-up",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
+    },
+    {
+      "_id": "69d0e7e1abf08d0b4384256e",
+      "title": "Sushi lunch",
+      "category": "food",
+      "amount": 16.9,
+      "date": "2026-03-25",
+      "description": "Sushi Hub",
+      "createdAt": "2026-04-04T10:28:49.262Z",
+      "updatedAt": "2026-04-04T10:28:49.262Z"
     }
   ],
   "categories": [
     {
-      "_id": "69d0e16a58baa2a2829db7d3",
+      "_id": "69d0e30a58baa2a2829db7e3",
       "slug": "food",
       "label": "Food & Dining",
       "icon": "UtensilsCrossed",
       "color": "oklch(0.75 0.15 65)",
       "isDefault": true,
       "order": 0,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7d4",
+      "_id": "69d0e30a58baa2a2829db7e4",
       "slug": "transport",
       "label": "Transport",
       "icon": "Car",
       "color": "oklch(0.65 0.16 250)",
       "isDefault": true,
       "order": 1,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7d5",
+      "_id": "69d0e30a58baa2a2829db7e5",
       "slug": "entertainment",
       "label": "Entertainment",
       "icon": "Gamepad2",
       "color": "oklch(0.63 0.18 295)",
       "isDefault": true,
       "order": 2,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7d6",
+      "_id": "69d0e30a58baa2a2829db7e6",
       "slug": "shopping",
       "label": "Shopping",
       "icon": "ShoppingBag",
       "color": "oklch(0.70 0.16 350)",
       "isDefault": true,
       "order": 3,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7d7",
+      "_id": "69d0e30a58baa2a2829db7e7",
       "slug": "bills",
       "label": "Bills & Utilities",
       "icon": "Receipt",
       "color": "oklch(0.58 0.04 250)",
       "isDefault": true,
       "order": 4,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7d8",
+      "_id": "69d0e30a58baa2a2829db7e8",
       "slug": "health",
       "label": "Health",
       "icon": "Heart",
       "color": "oklch(0.65 0.19 20)",
       "isDefault": true,
       "order": 5,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7d9",
+      "_id": "69d0e30a58baa2a2829db7e9",
       "slug": "education",
       "label": "Education",
       "icon": "GraduationCap",
       "color": "oklch(0.70 0.13 175)",
       "isDefault": true,
       "order": 6,
-      "createdAt": "2026-04-04T10:01:14.562Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     },
     {
-      "_id": "69d0e16a58baa2a2829db7da",
+      "_id": "69d0e30a58baa2a2829db7ea",
       "slug": "other",
       "label": "Other",
       "icon": "MoreHorizontal",
       "color": "oklch(0.62 0.02 75)",
       "isDefault": true,
       "order": 7,
-      "createdAt": "2026-04-04T10:01:14.562Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7db",
-      "slug": "food",
-      "label": "Food & Dining",
-      "icon": "UtensilsCrossed",
-      "color": "oklch(0.75 0.15 65)",
-      "isDefault": true,
-      "order": 0,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7dc",
-      "slug": "transport",
-      "label": "Transport",
-      "icon": "Car",
-      "color": "oklch(0.65 0.16 250)",
-      "isDefault": true,
-      "order": 1,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7dd",
-      "slug": "entertainment",
-      "label": "Entertainment",
-      "icon": "Gamepad2",
-      "color": "oklch(0.63 0.18 295)",
-      "isDefault": true,
-      "order": 2,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7de",
-      "slug": "shopping",
-      "label": "Shopping",
-      "icon": "ShoppingBag",
-      "color": "oklch(0.70 0.16 350)",
-      "isDefault": true,
-      "order": 3,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7df",
-      "slug": "bills",
-      "label": "Bills & Utilities",
-      "icon": "Receipt",
-      "color": "oklch(0.58 0.04 250)",
-      "isDefault": true,
-      "order": 4,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7e0",
-      "slug": "health",
-      "label": "Health",
-      "icon": "Heart",
-      "color": "oklch(0.65 0.19 20)",
-      "isDefault": true,
-      "order": 5,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7e1",
-      "slug": "education",
-      "label": "Education",
-      "icon": "GraduationCap",
-      "color": "oklch(0.70 0.13 175)",
-      "isDefault": true,
-      "order": 6,
-      "createdAt": "2026-04-04T10:01:14.611Z"
-    },
-    {
-      "_id": "69d0e16a58baa2a2829db7e2",
-      "slug": "other",
-      "label": "Other",
-      "icon": "MoreHorizontal",
-      "color": "oklch(0.62 0.02 75)",
-      "isDefault": true,
-      "order": 7,
-      "createdAt": "2026-04-04T10:01:14.611Z"
+      "createdAt": "2026-04-04T10:08:10.053Z"
     }
   ]
 }
