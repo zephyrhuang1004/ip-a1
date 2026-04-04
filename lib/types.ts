@@ -36,3 +36,17 @@ export interface CategoryOption {
   readonly label: string
   readonly icon: string
 }
+
+export interface CategoryDoc {
+  slug: string
+  label: string
+  icon: string
+  color: string
+  isDefault: boolean
+  order: number
+}
+
+export interface CategoryWithStats extends CategoryDoc {
+  count: number
+  total: number
+}

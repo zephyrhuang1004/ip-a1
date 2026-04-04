@@ -35,7 +35,7 @@ interface MonthlyTrendChartProps {
 const chartConfig = {
   total: {
     label: "Spending",
-    color: "var(--cat-food)",
+    color: "var(--primary)",
   },
 }
 
@@ -108,7 +108,7 @@ export function MonthlyTrendChart({
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="var(--cat-food)"
+                stroke="var(--primary)"
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -122,7 +122,7 @@ export function MonthlyTrendChart({
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar
                 dataKey="total"
-                fill="var(--cat-food)"
+                fill="var(--primary)"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

@@ -17,15 +17,21 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react"
-import { getCategoryLabel, getCategoryColor } from "@/lib/constants"
 import type { ExpenseStats } from "@/lib/types"
 
 interface CategoryChartProps {
   stats: ExpenseStats
   isLoading: boolean
+  getLabel: (slug: string) => string
+  getColor: (slug: string) => string
 }
 
-export function CategoryChart({ stats, isLoading }: CategoryChartProps) {
+export function CategoryChart({
+  stats,
+  isLoading,
+  getLabel,
+  getColor,
+}: CategoryChartProps) {
   const [chartType, setChartType] = useState<"bar" | "pie">("bar")
 
   if (isLoading) {
@@ -33,9 +39,9 @@ export function CategoryChart({ stats, isLoading }: CategoryChartProps) {
   }
 
   const data = stats.byCategory.map((item) => ({
-    name: getCategoryLabel(item.category),
+    name: getLabel(item.category),
     value: item.total,
-    fill: getCategoryColor(item.category),
+    fill: getColor(item.category),
   }))
 
   if (data.length === 0) {

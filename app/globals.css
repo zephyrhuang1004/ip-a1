@@ -81,15 +81,6 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
 
-    /* Category colors */
-    --cat-food: oklch(0.75 0.15 65);
-    --cat-transport: oklch(0.62 0.17 250);
-    --cat-entertainment: oklch(0.60 0.19 295);
-    --cat-shopping: oklch(0.68 0.17 350);
-    --cat-bills: oklch(0.55 0.04 250);
-    --cat-health: oklch(0.63 0.2 20);
-    --cat-education: oklch(0.68 0.13 175);
-    --cat-other: oklch(0.60 0.02 75);
 }
 
 .dark {
@@ -125,30 +116,25 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
 
-    /* Category colors — brighter in dark mode */
-    --cat-food: oklch(0.78 0.14 65);
-    --cat-transport: oklch(0.68 0.16 250);
-    --cat-entertainment: oklch(0.66 0.18 295);
-    --cat-shopping: oklch(0.72 0.16 350);
-    --cat-bills: oklch(0.60 0.04 250);
-    --cat-health: oklch(0.68 0.18 20);
-    --cat-education: oklch(0.72 0.12 175);
-    --cat-other: oklch(0.65 0.02 75);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply scroll-smooth font-sans;
-    scrollbar-width: none;
-    }
-  html::-webkit-scrollbar {
-    display: none;
     }
 }
 

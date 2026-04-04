@@ -1,8 +1,30 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getExpensesCollection, getCategoriesCollection } from "@/lib/db"
+import { SEED_CATEGORIES, COLOR_PALETTE, ICON_POOL } from "@/lib/constants"
 
-// GET /api/expenses/categories — list all categories with expense counts
-// Merges: expense aggregation + custom categories collection
+/** Seed default categories if the collection is empty */
+async function ensureSeeded(
+  col: Awaited<ReturnType<typeof getCategoriesCollection>>
+) {
+  const count = await col.countDocuments()
+  if (count > 0) return
+
+  const now = new Date().toISOString()
+  const docs = SEED_CATEGORIES.map((c, i) => ({
+    ...c,
+    order: i,
+    createdAt: now,
+  }))
+
+  try {
+    await col.insertMany(docs)
+    await col.createIndex({ slug: 1 }, { unique: true })
+  } catch {
+    // Another request may have seeded concurrently — safe to ignore
+  }
+}
+
+// GET /api/expenses/categories — list all categories with expense stats
 export async function GET() {
   try {
     const [expensesCol, categoriesCol] = await Promise.all([
@@ -10,35 +32,46 @@ export async function GET() {
       getCategoriesCollection(),
     ])
 
-    const [expenseStats, customCats] = await Promise.all([
+    await ensureSeeded(categoriesCol)
+
+    const [allCategories, expenseStats] = await Promise.all([
+      categoriesCol.find().sort({ order: 1 }).toArray(),
       expensesCol
         .aggregate([
-          { $group: { _id: "$category", count: { $sum: 1 }, total: { $sum: "$amount" } } },
-          { $sort: { total: -1 as const } },
+          {
+            $group: {
+              _id: "$category",
+              count: { $sum: 1 },
+              total: { $sum: "$amount" },
+            },
+          },
         ])
         .toArray(),
-      categoriesCol.find().toArray(),
     ])
 
-    // Build a map: slug -> { count, total }
     const statsMap = new Map<string, { count: number; total: number }>()
     for (const r of expenseStats) {
-      statsMap.set(r._id as string, { count: r.count as number, total: r.total as number })
+      statsMap.set(r._id as string, {
+        count: r.count as number,
+        total: r.total as number,
+      })
     }
 
-    // Add custom categories that have no expenses yet
-    for (const cat of customCats) {
-      const slug = cat.slug as string
-      if (!statsMap.has(slug)) {
-        statsMap.set(slug, { count: 0, total: 0 })
+    const result = allCategories.map((cat) => {
+      const stats = statsMap.get(cat.slug as string) ?? { count: 0, total: 0 }
+      return {
+        slug: cat.slug,
+        label: cat.label,
+        icon: cat.icon,
+        color: cat.color,
+        isDefault: cat.isDefault ?? false,
+        order: cat.order ?? 0,
+        count: stats.count,
+        total: stats.total,
       }
-    }
+    })
 
-    const categories = [...statsMap.entries()]
-      .map(([slug, data]) => ({ slug, count: data.count, total: data.total }))
-      .sort((a, b) => b.total - a.total)
-
-    return NextResponse.json(categories)
+    return NextResponse.json(result)
   } catch (error) {
     console.error("GET /api/expenses/categories error:", error)
     return NextResponse.json(
@@ -49,23 +82,25 @@ export async function GET() {
 }
 
 // POST /api/expenses/categories — create a new custom category
-// Body: { name: string }
+// Body: { label: string }
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const name = typeof body.name === "string" ? body.name.trim().toLowerCase() : ""
+    const label =
+      typeof body.label === "string" ? body.label.trim() : ""
 
-    if (!name) {
+    if (!label) {
       return NextResponse.json(
-        { error: "Category name is required" },
+        { error: "Category label is required" },
         { status: 400 }
       )
     }
 
+    const slug = label.toLowerCase().replace(/\s+/g, "-")
     const categoriesCol = await getCategoriesCollection()
 
-    // Check for duplicate
-    const existing = await categoriesCol.findOne({ slug: name })
+    // Check for duplicate slug
+    const existing = await categoriesCol.findOne({ slug })
     if (existing) {
       return NextResponse.json(
         { error: "Category already exists" },
@@ -73,12 +108,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await categoriesCol.insertOne({
-      slug: name,
-      createdAt: new Date().toISOString(),
-    })
+    // Auto-assign icon and color based on current count
+    const totalCount = await categoriesCol.countDocuments()
+    const icon = ICON_POOL[totalCount % ICON_POOL.length]
+    const color = COLOR_PALETTE[totalCount % COLOR_PALETTE.length]
 
-    return NextResponse.json({ slug: name }, { status: 201 })
+    const doc = {
+      slug,
+      label,
+      icon,
+      color,
+      isDefault: false,
+      order: totalCount,
+      createdAt: new Date().toISOString(),
+    }
+
+    await categoriesCol.insertOne(doc)
+
+    return NextResponse.json(doc, { status: 201 })
   } catch (error) {
     console.error("POST /api/expenses/categories error:", error)
     return NextResponse.json(
@@ -89,8 +136,6 @@ export async function POST(request: NextRequest) {
 }
 
 // PATCH /api/expenses/categories — rename or delete a category
-// Body: { action: "rename", from: string, to: string }
-//    or { action: "delete", category: string }
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json()
@@ -100,34 +145,41 @@ export async function PATCH(request: NextRequest) {
     ])
 
     if (body.action === "rename") {
-      const { from, to } = body
-      if (!from || !to || typeof from !== "string" || typeof to !== "string") {
+      const { slug, newLabel } = body
+      if (
+        !slug ||
+        !newLabel ||
+        typeof slug !== "string" ||
+        typeof newLabel !== "string"
+      ) {
         return NextResponse.json(
-          { error: "Both 'from' and 'to' are required strings" },
+          { error: "'slug' and 'newLabel' are required strings" },
           { status: 400 }
         )
       }
-      const slug = to.trim().toLowerCase()
-      if (!slug) {
+
+      const trimmed = newLabel.trim()
+      if (!trimmed) {
         return NextResponse.json(
-          { error: "New category name cannot be empty" },
+          { error: "New label cannot be empty" },
           { status: 400 }
         )
       }
-      // Rename in expenses
-      const result = await expensesCol.updateMany(
-        { category: from },
-        { $set: { category: slug, updatedAt: new Date().toISOString() } }
+
+      // Only update the label — slug stays stable, expenses are unaffected
+      const result = await categoriesCol.updateOne(
+        { slug },
+        { $set: { label: trimmed } }
       )
-      // Rename in categories collection (if it exists there)
-      await categoriesCol.updateOne(
-        { slug: from },
-        { $set: { slug } }
-      )
-      return NextResponse.json({
-        matched: result.matchedCount,
-        modified: result.modifiedCount,
-      })
+
+      if (result.matchedCount === 0) {
+        return NextResponse.json(
+          { error: "Category not found" },
+          { status: 404 }
+        )
+      }
+
+      return NextResponse.json({ modified: result.modifiedCount })
     }
 
     if (body.action === "delete") {
@@ -138,13 +190,28 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         )
       }
+
+      if (category === "other") {
+        return NextResponse.json(
+          { error: "Cannot delete the 'Other' category" },
+          { status: 400 }
+        )
+      }
+
       // Move all expenses in this category to "other"
       const result = await expensesCol.updateMany(
         { category },
-        { $set: { category: "other", updatedAt: new Date().toISOString() } }
+        {
+          $set: {
+            category: "other",
+            updatedAt: new Date().toISOString(),
+          },
+        }
       )
-      // Remove from categories collection
+
+      // Remove category doc
       await categoriesCol.deleteOne({ slug: category })
+
       return NextResponse.json({
         matched: result.matchedCount,
         modified: result.modifiedCount,

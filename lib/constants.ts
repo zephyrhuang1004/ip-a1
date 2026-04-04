@@ -1,15 +1,4 @@
-import type { CategoryOption } from "./types"
-
-export const DEFAULT_CATEGORIES: readonly CategoryOption[] = [
-  { slug: "food", label: "Food & Dining", icon: "UtensilsCrossed" },
-  { slug: "transport", label: "Transport", icon: "Car" },
-  { slug: "entertainment", label: "Entertainment", icon: "Gamepad2" },
-  { slug: "shopping", label: "Shopping", icon: "ShoppingBag" },
-  { slug: "bills", label: "Bills & Utilities", icon: "Receipt" },
-  { slug: "health", label: "Health", icon: "Heart" },
-  { slug: "education", label: "Education", icon: "GraduationCap" },
-  { slug: "other", label: "Other", icon: "MoreHorizontal" },
-] as const
+import type { CategoryDoc } from "./types"
 
 export const CURRENCY = {
   code: "AUD",
@@ -26,27 +15,32 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
-export function getCategoryLabel(slug: string): string {
-  const found = DEFAULT_CATEGORIES.find((c) => c.slug === slug)
-  return found ? found.label : slug
-}
+/** Seed data — only used server-side to initialize the categories collection */
+export const SEED_CATEGORIES: readonly Omit<CategoryDoc, "order">[] = [
+  { slug: "food", label: "Food & Dining", icon: "UtensilsCrossed", color: "oklch(0.75 0.15 65)", isDefault: true },
+  { slug: "transport", label: "Transport", icon: "Car", color: "oklch(0.65 0.16 250)", isDefault: true },
+  { slug: "entertainment", label: "Entertainment", icon: "Gamepad2", color: "oklch(0.63 0.18 295)", isDefault: true },
+  { slug: "shopping", label: "Shopping", icon: "ShoppingBag", color: "oklch(0.70 0.16 350)", isDefault: true },
+  { slug: "bills", label: "Bills & Utilities", icon: "Receipt", color: "oklch(0.58 0.04 250)", isDefault: true },
+  { slug: "health", label: "Health", icon: "Heart", color: "oklch(0.65 0.19 20)", isDefault: true },
+  { slug: "education", label: "Education", icon: "GraduationCap", color: "oklch(0.70 0.13 175)", isDefault: true },
+  { slug: "other", label: "Other", icon: "MoreHorizontal", color: "oklch(0.62 0.02 75)", isDefault: true },
+] as const
 
-export function getCategoryIcon(slug: string): string {
-  const found = DEFAULT_CATEGORIES.find((c) => c.slug === slug)
-  return found ? found.icon : "Tag"
-}
+/** Color palette for auto-assigning to new custom categories */
+export const COLOR_PALETTE = [
+  "oklch(0.65 0.18 30)",
+  "oklch(0.70 0.15 130)",
+  "oklch(0.60 0.16 210)",
+  "oklch(0.65 0.14 310)",
+  "oklch(0.72 0.12 90)",
+  "oklch(0.58 0.17 270)",
+  "oklch(0.67 0.15 160)",
+  "oklch(0.63 0.13 45)",
+] as const
 
-/** Maps category slug to its CSS variable name for color */
-export function getCategoryColor(slug: string): string {
-  const known = new Set([
-    "food",
-    "transport",
-    "entertainment",
-    "shopping",
-    "bills",
-    "health",
-    "education",
-    "other",
-  ])
-  return known.has(slug) ? `var(--cat-${slug})` : "var(--cat-other)"
-}
+/** Icon pool for auto-assigning to new custom categories */
+export const ICON_POOL = [
+  "Tag", "Folder", "Star", "Zap", "Coffee",
+  "Music", "Gift", "Briefcase", "Home", "Plane",
+] as const

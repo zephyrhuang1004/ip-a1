@@ -38,7 +38,7 @@
       "date": "2026-03-02",
       "description": "Monthly transport pass",
       "createdAt": "2026-03-02T08:30:00.000Z",
-      "updatedAt": "2026-03-02T08:30:00.000Z"
+      "updatedAt": "2026-04-04T09:01:46.236Z"
     },
     {
       "_id": "69be8633fb9ca022058b5a70",
@@ -148,7 +148,7 @@
       "date": "2026-02-15",
       "description": "SYD domestic terminal",
       "createdAt": "2026-02-15T06:00:00.000Z",
-      "updatedAt": "2026-02-15T06:00:00.000Z"
+      "updatedAt": "2026-04-04T09:01:46.236Z"
     },
     {
       "_id": "69be8633fb9ca022058b5a7b",
@@ -171,5 +171,166 @@
       "updatedAt": "2026-02-22T14:00:00.000Z"
     }
   ],
-  "categories": []
+  "categories": [
+    {
+      "_id": "69d0e16a58baa2a2829db7d3",
+      "slug": "food",
+      "label": "Food & Dining",
+      "icon": "UtensilsCrossed",
+      "color": "oklch(0.75 0.15 65)",
+      "isDefault": true,
+      "order": 0,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7d4",
+      "slug": "transport",
+      "label": "Transport",
+      "icon": "Car",
+      "color": "oklch(0.65 0.16 250)",
+      "isDefault": true,
+      "order": 1,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7d5",
+      "slug": "entertainment",
+      "label": "Entertainment",
+      "icon": "Gamepad2",
+      "color": "oklch(0.63 0.18 295)",
+      "isDefault": true,
+      "order": 2,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7d6",
+      "slug": "shopping",
+      "label": "Shopping",
+      "icon": "ShoppingBag",
+      "color": "oklch(0.70 0.16 350)",
+      "isDefault": true,
+      "order": 3,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7d7",
+      "slug": "bills",
+      "label": "Bills & Utilities",
+      "icon": "Receipt",
+      "color": "oklch(0.58 0.04 250)",
+      "isDefault": true,
+      "order": 4,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7d8",
+      "slug": "health",
+      "label": "Health",
+      "icon": "Heart",
+      "color": "oklch(0.65 0.19 20)",
+      "isDefault": true,
+      "order": 5,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7d9",
+      "slug": "education",
+      "label": "Education",
+      "icon": "GraduationCap",
+      "color": "oklch(0.70 0.13 175)",
+      "isDefault": true,
+      "order": 6,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7da",
+      "slug": "other",
+      "label": "Other",
+      "icon": "MoreHorizontal",
+      "color": "oklch(0.62 0.02 75)",
+      "isDefault": true,
+      "order": 7,
+      "createdAt": "2026-04-04T10:01:14.562Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7db",
+      "slug": "food",
+      "label": "Food & Dining",
+      "icon": "UtensilsCrossed",
+      "color": "oklch(0.75 0.15 65)",
+      "isDefault": true,
+      "order": 0,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7dc",
+      "slug": "transport",
+      "label": "Transport",
+      "icon": "Car",
+      "color": "oklch(0.65 0.16 250)",
+      "isDefault": true,
+      "order": 1,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7dd",
+      "slug": "entertainment",
+      "label": "Entertainment",
+      "icon": "Gamepad2",
+      "color": "oklch(0.63 0.18 295)",
+      "isDefault": true,
+      "order": 2,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7de",
+      "slug": "shopping",
+      "label": "Shopping",
+      "icon": "ShoppingBag",
+      "color": "oklch(0.70 0.16 350)",
+      "isDefault": true,
+      "order": 3,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7df",
+      "slug": "bills",
+      "label": "Bills & Utilities",
+      "icon": "Receipt",
+      "color": "oklch(0.58 0.04 250)",
+      "isDefault": true,
+      "order": 4,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7e0",
+      "slug": "health",
+      "label": "Health",
+      "icon": "Heart",
+      "color": "oklch(0.65 0.19 20)",
+      "isDefault": true,
+      "order": 5,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7e1",
+      "slug": "education",
+      "label": "Education",
+      "icon": "GraduationCap",
+      "color": "oklch(0.70 0.13 175)",
+      "isDefault": true,
+      "order": 6,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    },
+    {
+      "_id": "69d0e16a58baa2a2829db7e2",
+      "slug": "other",
+      "label": "Other",
+      "icon": "MoreHorizontal",
+      "color": "oklch(0.62 0.02 75)",
+      "isDefault": true,
+      "order": 7,
+      "createdAt": "2026-04-04T10:01:14.611Z"
+    }
+  ]
 }

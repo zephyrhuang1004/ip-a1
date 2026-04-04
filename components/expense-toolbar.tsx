@@ -1,6 +1,6 @@
 "use client"
 
-import { Plus, Settings2 } from "lucide-react"
+import { Plus, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { DEFAULT_CATEGORIES } from "@/lib/constants"
+import type { CategoryWithStats } from "@/lib/types"
 
 interface ExpenseToolbarProps {
   categoryFilter: string
@@ -19,7 +19,7 @@ interface ExpenseToolbarProps {
   onAdd: () => void
   onManageCategories: () => void
   availableMonths: string[]
-  customCategories: string[]
+  categories: CategoryWithStats[]
 }
 
 export function ExpenseToolbar({
@@ -30,7 +30,7 @@ export function ExpenseToolbar({
   onAdd,
   onManageCategories,
   availableMonths,
-  customCategories,
+  categories,
 }: ExpenseToolbarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -43,14 +43,9 @@ export function ExpenseToolbar({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All categories</SelectItem>
-          {DEFAULT_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <SelectItem key={cat.slug} value={cat.slug}>
               {cat.label}
-            </SelectItem>
-          ))}
-          {customCategories.map((cat) => (
-            <SelectItem key={cat} value={cat}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -73,13 +68,9 @@ export function ExpenseToolbar({
         </SelectContent>
       </Select>
 
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={onManageCategories}
-        aria-label="Manage categories"
-      >
-        <Settings2 className="size-4" />
+      <Button variant="outline" onClick={onManageCategories}>
+        <Tag className="size-4" />
+        <span className="hidden sm:inline">Categories</span>
       </Button>
 
       <div className="hidden flex-1 sm:block" />

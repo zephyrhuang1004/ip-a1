@@ -15,6 +15,9 @@ interface ExpenseListProps {
   onDelete: (expense: Expense) => void
   onAdd?: () => void
   onRetry?: () => void
+  getLabel: (slug: string) => string
+  getColor: (slug: string) => string
+  getIcon: (slug: string) => string
 }
 
 export function ExpenseList({
@@ -25,6 +28,9 @@ export function ExpenseList({
   onDelete,
   onAdd,
   onRetry,
+  getLabel,
+  getColor,
+  getIcon,
 }: ExpenseListProps) {
   if (isLoading) {
     return (
@@ -42,15 +48,18 @@ export function ExpenseList({
         <div className="flex size-14 items-center justify-center rounded-2xl bg-destructive/10">
           <AlertCircle className="size-7 text-destructive" />
         </div>
-        <h3 className="mt-4 text-sm font-semibold">
-          Something went wrong
-        </h3>
+        <h3 className="mt-4 text-sm font-semibold">Something went wrong</h3>
         <p className="mt-1 max-w-[260px] text-sm text-muted-foreground">
           Could not load your expenses. Please check your connection and try
           again.
         </p>
         {onRetry && (
-          <Button onClick={onRetry} variant="outline" size="sm" className="mt-4">
+          <Button
+            onClick={onRetry}
+            variant="outline"
+            size="sm"
+            className="mt-4"
+          >
             <RefreshCw className="mr-1.5 size-4" />
             Retry
           </Button>
@@ -63,15 +72,41 @@ export function ExpenseList({
     return <EmptyState onAdd={onAdd} />
   }
 
+  // Group expenses by date
+  const grouped = new Map<string, typeof expenses>()
+  for (const expense of expenses) {
+    const key = expense.date
+    const group = grouped.get(key)
+    if (group) {
+      group.push(expense)
+    } else {
+      grouped.set(key, [expense])
+    }
+  }
+
   return (
-    <div className="stagger-children space-y-2">
-      {expenses.map((expense) => (
-        <ExpenseItem
-          key={String(expense._id)}
-          expense={expense}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+    <div className="stagger-children space-y-4">
+      {[...grouped.entries()].map(([date, items]) => (
+        <div key={date} className="space-y-2">
+          <p className="px-1 text-xs font-medium text-muted-foreground">
+            {new Date(date + "T00:00:00").toLocaleDateString("en-AU", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </p>
+          {items.map((expense) => (
+            <ExpenseItem
+              key={String(expense._id)}
+              expense={expense}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              getLabel={getLabel}
+              getColor={getColor}
+              getIcon={getIcon}
+            />
+          ))}
+        </div>
       ))}
     </div>
   )

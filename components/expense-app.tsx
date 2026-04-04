@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/header"
@@ -15,7 +15,7 @@ import { MonthlyTrendChart } from "@/components/monthly-trend-chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useExpenses } from "@/hooks/use-expenses"
 import { useStats } from "@/hooks/use-stats"
-import { DEFAULT_CATEGORIES } from "@/lib/constants"
+import { useCategories } from "@/hooks/use-categories"
 import type { Expense } from "@/lib/types"
 import type { ExpenseFormData } from "@/lib/schemas"
 
@@ -35,12 +35,21 @@ export function ExpenseApp() {
     category: categoryFilter === "all" ? undefined : categoryFilter,
     month: monthFilter === "all" ? undefined : monthFilter,
   })
+
   const {
     stats,
     isLoading: statsLoading,
     error: statsError,
     refetch: refetchStats,
   } = useStats()
+
+  const {
+    categories,
+    refetch: refetchCategories,
+    getLabel,
+    getColor,
+    getIcon,
+  } = useCategories()
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -58,32 +67,6 @@ export function ExpenseApp() {
     () => stats.byMonth.map((m) => m.month),
     [stats.byMonth]
   )
-
-  // Fetch all custom categories (from expenses + categories collection)
-  const [customCategories, setCustomCategories] = useState<string[]>([])
-  const fetchCustomCategories = useCallback(async () => {
-    try {
-      const res = await fetch("/api/expenses/categories")
-      if (!res.ok) return
-      const data: { slug: string }[] = await res.json()
-      const defaultSlugs = new Set(DEFAULT_CATEGORIES.map((c) => c.slug))
-      setCustomCategories(
-        data.filter((c) => !defaultSlugs.has(c.slug)).map((c) => c.slug)
-      )
-    } catch {
-      // fall back to deriving from expenses
-      const defaultSlugs = new Set(DEFAULT_CATEGORIES.map((c) => c.slug))
-      const custom = new Set<string>()
-      for (const exp of expenses) {
-        if (!defaultSlugs.has(exp.category)) custom.add(exp.category)
-      }
-      setCustomCategories([...custom])
-    }
-  }, [expenses])
-
-  useEffect(() => {
-    fetchCustomCategories()
-  }, [fetchCustomCategories])
 
   function handleAdd() {
     setEditingExpense(null)
@@ -107,7 +90,7 @@ export function ExpenseApp() {
       await create(data)
       toast.success("Expense added")
     }
-    await refetchStats()
+    await Promise.all([refetchStats(), refetchCategories()])
   }
 
   async function handleDeleteConfirm() {
@@ -117,7 +100,7 @@ export function ExpenseApp() {
       await remove(String(deleteTarget._id))
       toast.success("Expense deleted")
       setDeleteTarget(null)
-      await refetchStats()
+      await Promise.all([refetchStats(), refetchCategories()])
     } catch {
       toast.error("Failed to delete expense")
     } finally {
@@ -134,6 +117,7 @@ export function ExpenseApp() {
           stats={stats}
           isLoading={statsLoading}
           error={statsError}
+          getLabel={getLabel}
         />
       </section>
 
@@ -156,7 +140,7 @@ export function ExpenseApp() {
             onAdd={handleAdd}
             onManageCategories={() => setCategoryDialogOpen(true)}
             availableMonths={availableMonths}
-            customCategories={customCategories}
+            categories={categories}
           />
           <ExpenseList
             expenses={expenses}
@@ -166,11 +150,19 @@ export function ExpenseApp() {
             onDelete={handleDeleteRequest}
             onAdd={handleAdd}
             onRetry={refetchExpenses}
+            getLabel={getLabel}
+            getColor={getColor}
+            getIcon={getIcon}
           />
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-4 space-y-6">
-          <CategoryChart stats={stats} isLoading={statsLoading} />
+          <CategoryChart
+            stats={stats}
+            isLoading={statsLoading}
+            getLabel={getLabel}
+            getColor={getColor}
+          />
           <MonthlyTrendChart stats={stats} isLoading={statsLoading} />
         </TabsContent>
       </Tabs>
@@ -180,7 +172,7 @@ export function ExpenseApp() {
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
         expense={editingExpense}
-        customCategories={customCategories}
+        categories={categories}
       />
 
       <CategoryDialog
@@ -190,7 +182,7 @@ export function ExpenseApp() {
           await Promise.all([
             refetchStats(),
             refetchExpenses(),
-            fetchCustomCategories(),
+            refetchCategories(),
           ])
         }}
       />

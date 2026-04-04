@@ -20,8 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { DEFAULT_CATEGORIES } from "@/lib/constants"
-import type { Expense } from "@/lib/types"
+import type { CategoryWithStats, Expense } from "@/lib/types"
 import type { ExpenseFormData } from "@/lib/schemas"
 
 interface ExpenseDialogProps {
@@ -29,7 +28,7 @@ interface ExpenseDialogProps {
   onOpenChange: (open: boolean) => void
   onSubmit: (data: ExpenseFormData) => Promise<void>
   expense?: Expense | null
-  customCategories?: string[]
+  categories: CategoryWithStats[]
 }
 
 const INITIAL_FORM: ExpenseFormData = {
@@ -45,7 +44,7 @@ export function ExpenseDialog({
   onOpenChange,
   onSubmit,
   expense,
-  customCategories = [],
+  categories,
 }: ExpenseDialogProps) {
   const [form, setForm] = useState<ExpenseFormData>(INITIAL_FORM)
   const [isCustomCategory, setIsCustomCategory] = useState(false)
@@ -58,9 +57,7 @@ export function ExpenseDialog({
   useEffect(() => {
     if (open) {
       if (expense) {
-        const isKnown = DEFAULT_CATEGORIES.some(
-          (c) => c.slug === expense.category
-        )
+        const isKnown = categories.some((c) => c.slug === expense.category)
         setForm({
           title: expense.title,
           category: expense.category,
@@ -77,7 +74,7 @@ export function ExpenseDialog({
       }
       setErrors({})
     }
-  }, [open, expense])
+  }, [open, expense, categories])
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {}
@@ -110,15 +107,6 @@ export function ExpenseDialog({
       setIsSubmitting(false)
     }
   }
-
-  const allCustomCategories = [
-    ...new Set([
-      ...customCategories,
-      ...(isCustomCategory && customCategoryInput.trim()
-        ? [customCategoryInput.trim().toLowerCase()]
-        : []),
-    ]),
-  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -168,18 +156,11 @@ export function ExpenseDialog({
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {DEFAULT_CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <SelectItem key={cat.slug} value={cat.slug}>
                     {cat.label}
                   </SelectItem>
                 ))}
-                {allCustomCategories
-                  .filter((c) => !DEFAULT_CATEGORIES.some((d) => d.slug === c))
-                  .map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
                 <SelectItem value="__custom__">+ Add custom...</SelectItem>
               </SelectContent>
             </Select>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -11,18 +11,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react"
-import {
-  DEFAULT_CATEGORIES,
-  formatCurrency,
-  getCategoryColor,
-  getCategoryLabel,
-} from "@/lib/constants"
-
-interface CategoryWithStats {
-  slug: string
-  count: number
-  total: number
-}
+import { formatCurrency } from "@/lib/constants"
+import type { CategoryWithStats } from "@/lib/types"
 
 interface CategoryDialogProps {
   open: boolean
@@ -45,10 +35,10 @@ export function CategoryDialog({
   const [addError, setAddError] = useState("")
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  const defaultSlugs = new Set(DEFAULT_CATEGORIES.map((c) => c.slug))
+  const hasFetched = useRef(false)
 
   const fetchCategories = useCallback(async () => {
-    setIsLoading(true)
+    if (!hasFetched.current) setIsLoading(true)
     try {
       const res = await fetch("/api/expenses/categories")
       if (res.ok) {
@@ -59,31 +49,40 @@ export function CategoryDialog({
       // silently fail
     } finally {
       setIsLoading(false)
+      hasFetched.current = true
     }
   }, [])
 
   useEffect(() => {
     if (open) {
+      hasFetched.current = false
       fetchCategories()
       setEditingSlug(null)
       setIsAdding(false)
       setNewCategoryName("")
       setAddError("")
+      setDeleteConfirm(null)
     }
   }, [open, fetchCategories])
 
-  async function handleRename(from: string) {
-    const to = editValue.trim().toLowerCase()
-    if (!to || to === from) {
+  async function handleRename(slug: string) {
+    const newLabel = editValue.trim()
+    if (!newLabel) {
       setEditingSlug(null)
       return
     }
-    setActionLoading(from)
+    // Find current label — skip if unchanged
+    const current = categories.find((c) => c.slug === slug)
+    if (current && current.label === newLabel) {
+      setEditingSlug(null)
+      return
+    }
+    setActionLoading(slug)
     try {
       const res = await fetch("/api/expenses/categories", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rename", from, to }),
+        body: JSON.stringify({ action: "rename", slug, newLabel }),
       })
       if (res.ok) {
         await fetchCategories()
@@ -97,14 +96,14 @@ export function CategoryDialog({
     }
   }
 
-  async function handleDelete(category: string) {
-    setActionLoading(category)
+  async function handleDelete(slug: string) {
+    setActionLoading(slug)
     setDeleteConfirm(null)
     try {
       const res = await fetch("/api/expenses/categories", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", category }),
+        body: JSON.stringify({ action: "delete", category: slug }),
       })
       if (res.ok) {
         await fetchCategories()
@@ -118,13 +117,11 @@ export function CategoryDialog({
   }
 
   async function handleAdd() {
-    const slug = newCategoryName.trim().toLowerCase()
-    if (!slug) return
-    const allSlugs = new Set([
-      ...DEFAULT_CATEGORIES.map((c) => c.slug),
-      ...categories.map((c) => c.slug),
-    ])
-    if (allSlugs.has(slug)) {
+    const label = newCategoryName.trim()
+    if (!label) return
+    const slug = label.toLowerCase().replace(/\s+/g, "-")
+    const exists = categories.some((c) => c.slug === slug)
+    if (exists) {
       setAddError("Category already exists")
       return
     }
@@ -134,7 +131,7 @@ export function CategoryDialog({
       const res = await fetch("/api/expenses/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: slug }),
+        body: JSON.stringify({ label }),
       })
       if (!res.ok) {
         const err = await res.json()
@@ -153,11 +150,7 @@ export function CategoryDialog({
   }
 
   const catsWithData = categories.filter((c) => c.count > 0)
-  const emptyCustom = categories.filter(
-    (c) => c.count === 0 && !defaultSlugs.has(c.slug)
-  )
-  const usedSlugs = new Set(categories.map((c) => c.slug))
-  const emptyDefaults = DEFAULT_CATEGORIES.filter((c) => !usedSlugs.has(c.slug))
+  const catsEmpty = categories.filter((c) => c.count === 0)
 
   function renderEditRow(slug: string, color: string) {
     return (
@@ -195,6 +188,64 @@ export function CategoryDialog({
         >
           <X className="size-3.5" />
         </Button>
+      </div>
+    )
+  }
+
+  function renderCategoryRow(cat: CategoryWithStats) {
+    if (editingSlug === cat.slug) {
+      return <div key={cat.slug}>{renderEditRow(cat.slug, cat.color)}</div>
+    }
+
+    const canEdit = cat.slug !== "other"
+    const canDelete = !cat.isDefault
+
+    return (
+      <div
+        key={cat.slug}
+        className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
+      >
+        <span
+          className="size-2.5 shrink-0 rounded-full"
+          style={{ backgroundColor: cat.color }}
+        />
+        <span className="flex-1 truncate text-sm font-medium">{cat.label}</span>
+        {cat.count > 0 ? (
+          <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+            {cat.count} · {formatCurrency(cat.total)}
+          </span>
+        ) : (
+          <span className="shrink-0 text-xs text-muted-foreground">
+            No expenses
+          </span>
+        )}
+        {canEdit && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground"
+            onClick={() => {
+              setEditingSlug(cat.slug)
+              setEditValue(cat.label)
+            }}
+            disabled={actionLoading === cat.slug}
+            aria-label={`Rename ${cat.label}`}
+          >
+            <Pencil className="size-3.5" />
+          </Button>
+        )}
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-destructive"
+            onClick={() => setDeleteConfirm(cat.slug)}
+            disabled={actionLoading === cat.slug}
+            aria-label={`Delete ${cat.label}`}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        )}
       </div>
     )
   }
@@ -275,137 +326,15 @@ export function CategoryDialog({
               <p className="px-3 text-xs text-destructive">{addError}</p>
             )}
 
-            {catsWithData.map((cat) => {
-              const isDefault = defaultSlugs.has(cat.slug)
-              const label = getCategoryLabel(cat.slug)
-              const color = getCategoryColor(cat.slug)
+            {catsWithData.map(renderCategoryRow)}
 
-              if (editingSlug === cat.slug) {
-                return (
-                  <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
-                )
-              }
-
-              return (
-                <div
-                  key={cat.slug}
-                  className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
-                >
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="flex-1 truncate text-sm font-medium">
-                    {label}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                    {cat.count} · {formatCurrency(cat.total)}
-                  </span>
-                  {!isDefault && (
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      className="text-muted-foreground"
-                      onClick={() => {
-                        setEditingSlug(cat.slug)
-                        setEditValue(cat.slug)
-                      }}
-                      disabled={actionLoading === cat.slug}
-                      aria-label={`Rename ${label}`}
-                    >
-                      <Pencil className="size-3.5" />
-                    </Button>
-                  )}
-                  {!isDefault && (
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      className="text-destructive"
-                      onClick={() => setDeleteConfirm(cat.slug)}
-                      disabled={actionLoading === cat.slug}
-                      aria-label={`Delete ${label}`}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  )}
-                </div>
-              )
-            })}
-
-            {emptyCustom.map((cat) => {
-              const label = getCategoryLabel(cat.slug)
-              const color = getCategoryColor(cat.slug)
-
-              if (editingSlug === cat.slug) {
-                return (
-                  <div key={cat.slug}>{renderEditRow(cat.slug, color)}</div>
-                )
-              }
-
-              return (
-                <div
-                  key={cat.slug}
-                  className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
-                >
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="flex-1 truncate text-sm font-medium">
-                    {label}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    No expenses
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="text-muted-foreground"
-                    onClick={() => {
-                      setEditingSlug(cat.slug)
-                      setEditValue(cat.slug)
-                    }}
-                    disabled={actionLoading === cat.slug}
-                    aria-label={`Rename ${label}`}
-                  >
-                    <Pencil className="size-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="text-destructive"
-                    onClick={() => setDeleteConfirm(cat.slug)}
-                    disabled={actionLoading === cat.slug}
-                    aria-label={`Delete ${label}`}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-              )
-            })}
-
-            {emptyDefaults.length > 0 && (
-              <>
-                {catsWithData.length > 0 && <div className="my-2 border-t" />}
-                {emptyDefaults.map((cat) => (
-                  <div
-                    key={cat.slug}
-                    className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 opacity-50"
-                  >
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: getCategoryColor(cat.slug) }}
-                    />
-                    <span className="flex-1 truncate text-sm">{cat.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      No expenses
-                    </span>
-                  </div>
-                ))}
-              </>
+            {catsEmpty.length > 0 && catsWithData.length > 0 && (
+              <div className="my-2 border-t" />
             )}
 
-            {catsWithData.length === 0 && emptyDefaults.length === 0 && (
+            {catsEmpty.map(renderCategoryRow)}
+
+            {categories.length === 0 && (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 No categories yet. Add an expense to get started.
               </div>
@@ -416,8 +345,12 @@ export function CategoryDialog({
         {deleteConfirm && (
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2">
             <p className="text-sm">
-              Delete <strong>{getCategoryLabel(deleteConfirm)}</strong>? Its
-              expenses will move to &ldquo;Other&rdquo;.
+              Delete{" "}
+              <strong>
+                {categories.find((c) => c.slug === deleteConfirm)?.label ??
+                  deleteConfirm}
+              </strong>
+              ? Its expenses will move to &ldquo;Other&rdquo;.
             </p>
             <div className="flex shrink-0 gap-1">
               <Button
