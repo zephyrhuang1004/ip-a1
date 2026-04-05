@@ -18,12 +18,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useExpenses } from "@/hooks/use-expenses"
 import { useStats } from "@/hooks/use-stats"
 import { useCategories } from "@/hooks/use-categories"
-import type { Expense } from "@/lib/types"
+import type { AnalyticsPeriod, Expense } from "@/lib/types"
 import type { ExpenseFormData } from "@/lib/schemas"
+
+function getPeriodRange(period: AnalyticsPeriod): {
+  from?: string
+  to?: string
+} {
+  if (period === "all") return {}
+
+  const now = new Date()
+  const to = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+
+  let fromDate: Date
+  switch (period) {
+    case "1m":
+      fromDate = now
+      break
+    case "3m":
+      fromDate = new Date(now.getFullYear(), now.getMonth() - 2, 1)
+      break
+    case "6m":
+      fromDate = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+      break
+    case "1y":
+      fromDate = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1)
+      break
+  }
+
+  const from = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}`
+  return { from, to }
+}
 
 export function ExpenseApp() {
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [monthFilter, setMonthFilter] = useState("all")
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<AnalyticsPeriod>("3m")
 
   const {
     expenses,
@@ -38,12 +68,24 @@ export function ExpenseApp() {
     month: monthFilter === "all" ? undefined : monthFilter,
   })
 
+  // Unfiltered stats for StatsOverview + available months
   const {
-    stats,
+    stats: overviewStats,
     isLoading: statsLoading,
     error: statsError,
-    refetch: refetchStats,
+    refetch: refetchOverviewStats,
   } = useStats()
+
+  // Period-filtered stats for analytics charts
+  const statsRange = useMemo(
+    () => getPeriodRange(analyticsPeriod),
+    [analyticsPeriod]
+  )
+  const {
+    stats: analyticsStats,
+    isLoading: analyticsLoading,
+    refetch: refetchAnalyticsStats,
+  } = useStats(statsRange)
 
   const {
     categories,
@@ -67,11 +109,15 @@ export function ExpenseApp() {
   // Category dialog state
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
 
-  // Derive available months from stats
+  // Derive available months from unfiltered stats
   const availableMonths = useMemo(
-    () => stats.byMonth.map((m) => m.month),
-    [stats.byMonth]
+    () => overviewStats.byMonth.map((m) => m.month),
+    [overviewStats.byMonth]
   )
+
+  async function refetchAllStats() {
+    await Promise.all([refetchOverviewStats(), refetchAnalyticsStats()])
+  }
 
   function handleAdd() {
     setEditingExpense(null)
@@ -95,7 +141,7 @@ export function ExpenseApp() {
       await create(data)
       toast.success("Expense added")
     }
-    await Promise.all([refetchStats(), refetchCategories()])
+    await Promise.all([refetchAllStats(), refetchCategories()])
   }
 
   async function handleDeleteConfirm() {
@@ -105,7 +151,7 @@ export function ExpenseApp() {
       await remove(String(deleteTarget._id))
       toast.success("Expense deleted")
       setDeleteTarget(null)
-      await Promise.all([refetchStats(), refetchCategories()])
+      await Promise.all([refetchAllStats(), refetchCategories()])
     } catch {
       toast.error("Failed to delete expense")
     } finally {
@@ -119,7 +165,7 @@ export function ExpenseApp() {
 
       <section className="mt-6">
         <StatsOverview
-          stats={stats}
+          stats={overviewStats}
           isLoading={statsLoading}
           error={statsError}
           getLabel={getLabel}
@@ -171,12 +217,19 @@ export function ExpenseApp() {
             getColor={getColor}
           />
           <CategoryChart
-            stats={stats}
-            isLoading={statsLoading}
+            stats={analyticsStats}
+            isLoading={analyticsLoading}
             getLabel={getLabel}
             getColor={getColor}
+            period={analyticsPeriod}
+            onPeriodChange={setAnalyticsPeriod}
           />
-          <MonthlyTrendChart stats={stats} isLoading={statsLoading} />
+          <MonthlyTrendChart
+            stats={analyticsStats}
+            isLoading={analyticsLoading}
+            period={analyticsPeriod}
+            onPeriodChange={setAnalyticsPeriod}
+          />
         </TabsContent>
       </Tabs>
 
@@ -195,7 +248,7 @@ export function ExpenseApp() {
         onChanged={async () => {
           setCategoryFilter("all")
           await Promise.all([
-            refetchStats(),
+            refetchAllStats(),
             refetchExpenses(),
             refetchCategories(),
           ])

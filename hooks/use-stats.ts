@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import type { ExpenseStats } from "@/lib/types"
 
 const EMPTY_STATS: ExpenseStats = {
@@ -17,17 +17,30 @@ interface UseStatsReturn {
   refetch: () => Promise<void>
 }
 
-export function useStats(): UseStatsReturn {
+interface UseStatsOptions {
+  from?: string // "YYYY-MM"
+  to?: string // "YYYY-MM"
+}
+
+export function useStats(options: UseStatsOptions = {}): UseStatsReturn {
   const [stats, setStats] = useState<ExpenseStats>(EMPTY_STATS)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const { from, to } = options
+  const hasFetched = useRef(false)
+
   const fetchStats = useCallback(async () => {
     try {
-      setIsLoading(true)
+      if (!hasFetched.current) setIsLoading(true)
       setError(null)
 
-      const res = await fetch("/api/expenses/stats")
+      const params = new URLSearchParams()
+      if (from) params.set("from", from)
+      if (to) params.set("to", to)
+
+      const qs = params.toString()
+      const res = await fetch(`/api/expenses/stats${qs ? `?${qs}` : ""}`)
 
       if (!res.ok) {
         throw new Error("Failed to fetch stats")
@@ -35,12 +48,13 @@ export function useStats(): UseStatsReturn {
 
       const data = await res.json()
       setStats(data)
+      hasFetched.current = true
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [from, to])
 
   useEffect(() => {
     fetchStats()

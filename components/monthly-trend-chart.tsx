@@ -29,11 +29,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart3, TrendingUp } from "lucide-react"
 import { ChartToggle } from "@/components/chart-toggle"
 import { formatCurrency } from "@/lib/constants"
-import type { ExpenseStats } from "@/lib/types"
+import type { AnalyticsPeriod, ExpenseStats } from "@/lib/types"
+import { PeriodSelector } from "@/components/period-selector"
 
 interface MonthlyTrendChartProps {
   stats: ExpenseStats
   isLoading: boolean
+  period: AnalyticsPeriod
+  onPeriodChange: (value: AnalyticsPeriod) => void
 }
 
 const chartConfig = {
@@ -52,6 +55,8 @@ function formatMonthLabel(month: string): string {
 export function MonthlyTrendChart({
   stats,
   isLoading,
+  period,
+  onPeriodChange,
 }: MonthlyTrendChartProps) {
   const [chartType, setChartType] = useState<"area" | "bar">("area")
 
@@ -89,6 +94,9 @@ export function MonthlyTrendChart({
       total: item.total,
     }))
 
+  const maxTotal = data.reduce((max, d) => Math.max(max, d.total), 0)
+  const yAxisWidth = Math.ceil(maxTotal).toString().length * 7 + 4
+
   const average =
     data.length > 0
       ? data.reduce((sum, d) => sum + d.total, 0) / data.length
@@ -125,10 +133,13 @@ export function MonthlyTrendChart({
           />
         </CardAction>
       </CardHeader>
+      <div className="px-6">
+        <PeriodSelector value={period} onChange={onPeriodChange} />
+      </div>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[280px] w-full">
           {chartType === "area" ? (
-            <AreaChart data={data}>
+            <AreaChart data={data} margin={{ top: 20 }}>
               <defs>
                 <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop
@@ -145,7 +156,12 @@ export function MonthlyTrendChart({
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" tickLine={false} tick={{ fontSize: 12 }} />
-              <YAxis tickLine={false} tick={{ fontSize: 12 }} />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 12 }}
+                width={yAxisWidth}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ReferenceLine
                 y={average}
@@ -177,16 +193,26 @@ export function MonthlyTrendChart({
               </Area>
             </AreaChart>
           ) : (
-            <BarChart data={data}>
+            <BarChart data={data} margin={{ top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" tickLine={false} tick={{ fontSize: 12 }} />
-              <YAxis tickLine={false} tick={{ fontSize: 12 }} />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 12 }}
+                width={yAxisWidth}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ReferenceLine
                 y={average}
                 stroke="var(--muted-foreground)"
                 strokeDasharray="4 4"
                 strokeOpacity={0.5}
+                label={{
+                  value: `Avg ${formatCurrency(average)}`,
+                  position: "insideTopRight",
+                  className: "fill-muted-foreground text-xs",
+                }}
               />
               <Bar dataKey="total" fill="var(--primary)" radius={5}>
                 <LabelList

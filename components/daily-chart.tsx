@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   Card,
   CardContent,
@@ -35,7 +35,7 @@ export function DailyChart({
   getLabel,
   getColor,
 }: DailyChartProps) {
-  const { data, activeSlugs } = useMemo(() => {
+  const { data, activeSlugs, maxTotal } = useMemo(() => {
     const days = 30
     const now = new Date()
     const map = new Map<string, Record<string, number>>()
@@ -74,7 +74,16 @@ export function DailyChart({
       return row
     })
 
-    return { data: rows, activeSlugs: allSlugs }
+    // Compute max daily total for Y-axis width
+    const maxTotal = rows.reduce((max, row) => {
+      const sum = allSlugs.reduce(
+        (s, slug) => s + ((row[slug] as number) ?? 0),
+        0
+      )
+      return Math.max(max, sum)
+    }, 0)
+
+    return { data: rows, activeSlugs: allSlugs, maxTotal }
   }, [expenses])
 
   const chartConfig = useMemo(
@@ -100,7 +109,7 @@ export function DailyChart({
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[260px] w-full">
-          <BarChart accessibilityLayer data={data}>
+          <BarChart accessibilityLayer data={data} margin={{ top: 8 }}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="date"
@@ -112,6 +121,12 @@ export function DailyChart({
               angle={-45}
               textAnchor="end"
               height={40}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 10 }}
+              width={Math.ceil(maxTotal).toString().length * 6 + 4}
             />
             <ChartTooltip
               content={({ active, payload, label }) => {

@@ -31,13 +31,16 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react"
 import { ChartToggle } from "@/components/chart-toggle"
 import { formatCurrency } from "@/lib/constants"
-import type { ExpenseStats } from "@/lib/types"
+import type { AnalyticsPeriod, ExpenseStats } from "@/lib/types"
+import { PeriodSelector } from "@/components/period-selector"
 
 interface CategoryChartProps {
   stats: ExpenseStats
   isLoading: boolean
   getLabel: (slug: string) => string
   getColor: (slug: string) => string
+  period: AnalyticsPeriod
+  onPeriodChange: (value: AnalyticsPeriod) => void
 }
 
 export function CategoryChart({
@@ -45,6 +48,8 @@ export function CategoryChart({
   isLoading,
   getLabel,
   getColor,
+  period,
+  onPeriodChange,
 }: CategoryChartProps) {
   const [chartType, setChartType] = useState<"bar" | "pie">("bar")
 
@@ -100,6 +105,9 @@ export function CategoryChart({
           />
         </CardAction>
       </CardHeader>
+      <div className="px-6">
+        <PeriodSelector value={period} onChange={onPeriodChange} />
+      </div>
       <CardContent>
         <ChartContainer
           config={chartConfig}

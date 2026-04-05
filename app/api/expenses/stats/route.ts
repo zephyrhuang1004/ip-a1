@@ -1,10 +1,32 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { getExpensesCollection } from "@/lib/db"
 
 // GET /api/expenses/stats — aggregated stats (by category + by month)
-export async function GET() {
+// Optional query params: ?from=YYYY-MM&to=YYYY-MM
+export async function GET(request: NextRequest) {
   try {
     const collection = await getExpensesCollection()
+
+    const { searchParams } = request.nextUrl
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
+
+    // Build date range filter using lexicographic string comparison
+    const dateFilter: Record<string, Record<string, string>> = {}
+    if (from && /^\d{4}-\d{2}$/.test(from)) {
+      dateFilter.date = { ...dateFilter.date, $gte: `${from}-01` }
+    }
+    if (to && /^\d{4}-\d{2}$/.test(to)) {
+      const [toY, toM] = to.split("-").map(Number)
+      const nextMonth =
+        toM === 12
+          ? `${toY + 1}-01`
+          : `${toY}-${String(toM + 1).padStart(2, "0")}`
+      dateFilter.date = { ...dateFilter.date, $lt: `${nextMonth}-01` }
+    }
+
+    const matchStage =
+      Object.keys(dateFilter).length > 0 ? [{ $match: dateFilter }] : []
 
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
@@ -14,6 +36,7 @@ export async function GET() {
         // Aggregate by category
         collection
           .aggregate<{ _id: string; total: number; count: number }>([
+            ...matchStage,
             {
               $group: {
                 _id: "$category",
@@ -28,6 +51,7 @@ export async function GET() {
         // Aggregate by month
         collection
           .aggregate<{ _id: string; total: number }>([
+            ...matchStage,
             {
               $group: {
                 _id: { $substr: ["$date", 0, 7] },
@@ -42,7 +66,10 @@ export async function GET() {
         collection
           .aggregate<{
             total: number
-          }>([{ $group: { _id: null, total: { $sum: "$amount" } } }])
+          }>([
+            ...matchStage,
+            { $group: { _id: null, total: { $sum: "$amount" } } },
+          ])
           .toArray(),
 
         // This month amount
@@ -50,6 +77,7 @@ export async function GET() {
           .aggregate<{
             total: number
           }>([
+            ...matchStage,
             { $match: { date: { $regex: `^${currentMonth}` } } },
             { $group: { _id: null, total: { $sum: "$amount" } } },
           ])

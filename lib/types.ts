@@ -37,6 +37,8 @@ export interface CategoryOption {
   readonly icon: string
 }
 
+export type AnalyticsPeriod = "1m" | "3m" | "6m" | "1y" | "all"
+
 export interface CategoryDoc {
   slug: string
   label: string
