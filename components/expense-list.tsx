@@ -87,7 +87,7 @@ export function ExpenseList({
   }
 
   return (
-    <div className="stagger-children space-y-4">
+    <div className="stagger-children space-y-6">
       {[...grouped.entries()].map(([date, items]) => (
         <div key={date} className="space-y-2">
           <p className="px-1 text-xs font-medium text-muted-foreground">
