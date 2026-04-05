@@ -191,6 +191,7 @@ export function ExpenseApp() {
       <CategoryDialog
         open={categoryDialogOpen}
         onOpenChange={setCategoryDialogOpen}
+        initialCategories={categories}
         onChanged={async () => {
           setCategoryFilter("all")
           await Promise.all([

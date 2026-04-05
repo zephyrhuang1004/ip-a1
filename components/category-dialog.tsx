@@ -19,14 +19,17 @@ interface CategoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onChanged: () => void
+  initialCategories: CategoryWithStats[]
 }
 
 export function CategoryDialog({
   open,
   onOpenChange,
   onChanged,
+  initialCategories,
 }: CategoryDialogProps) {
-  const [categories, setCategories] = useState<CategoryWithStats[]>([])
+  const [categories, setCategories] =
+    useState<CategoryWithStats[]>(initialCategories)
   const [isLoading, setIsLoading] = useState(false)
   const [editingSlug, setEditingSlug] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
@@ -60,8 +63,8 @@ export function CategoryDialog({
 
   useEffect(() => {
     if (open) {
-      hasFetched.current = false
-      fetchCategories()
+      setCategories(initialCategories)
+      hasFetched.current = true
       setEditingSlug(null)
       setIsAdding(false)
       setNewCategoryName("")
