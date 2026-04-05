@@ -155,29 +155,48 @@ export function DailyChart({
                     fill: string
                     payload: Record<string, number>
                   }
-                  if (!height) return <rect />
+                  if (!height || height < 0.5) return <rect />
                   const nonZero = activeSlugs.filter(
                     (s) => (payload[s] ?? 0) > 0
                   )
                   const isFirst = nonZero[0] === slug
                   const isLast = nonZero[nonZero.length - 1] === slug
-                  const R = 4
+                  // Clamp radius to half of height to prevent invalid path
+                  const maxR = Math.floor(height / 2)
+                  const R = Math.min(4, maxR)
+                  if (R <= 0) {
+                    return (
+                      <rect
+                        x={x}
+                        y={y}
+                        width={width}
+                        height={height}
+                        fill={f}
+                      />
+                    )
+                  }
                   const tl = isLast ? R : 0
                   const tr = isLast ? R : 0
                   const br = isFirst ? R : 0
                   const bl = isFirst ? R : 0
-                  const d = `
-                    M${x + tl},${y}
-                    h${width - tl - tr}
-                    ${tr ? `a${tr},${tr} 0 0 1 ${tr},${tr}` : `h0 v${tr}`}
-                    v${height - tr - br}
-                    ${br ? `a${br},${br} 0 0 1 -${br},${br}` : `v0 h0`}
-                    h-${width - bl - br}
-                    ${bl ? `a${bl},${bl} 0 0 1 -${bl},-${bl}` : `h0 v0`}
-                    v-${height - tl - bl}
-                    ${tl ? `a${tl},${tl} 0 0 1 ${tl},-${tl}` : `v0 h0`}
-                    Z
-                  `
+                  const vTop = Math.max(0, height - tr - br)
+                  const vBot = Math.max(0, height - tl - bl)
+                  const hTop = Math.max(0, width - tl - tr)
+                  const hBot = Math.max(0, width - bl - br)
+                  const d = [
+                    `M${x + tl},${y}`,
+                    `h${hTop}`,
+                    tr ? `a${tr},${tr} 0 0 1 ${tr},${tr}` : "",
+                    `v${vTop}`,
+                    br ? `a${br},${br} 0 0 1 ${-br},${br}` : "",
+                    `h${-hBot}`,
+                    bl ? `a${bl},${bl} 0 0 1 ${-bl},${-bl}` : "",
+                    `v${-vBot}`,
+                    tl ? `a${tl},${tl} 0 0 1 ${tl},${-tl}` : "",
+                    "Z",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")
                   return <path d={d} fill={f} />
                 }}
               />

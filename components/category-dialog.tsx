@@ -11,7 +11,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react"
-import { formatCurrency } from "@/lib/constants"
+import { formatCurrency, CUSTOM_COLORS } from "@/lib/constants"
+import { getIconComponent } from "@/lib/category-icon-map"
 import type { CategoryWithStats } from "@/lib/types"
 
 interface CategoryDialogProps {
@@ -29,9 +30,13 @@ export function CategoryDialog({
   const [isLoading, setIsLoading] = useState(false)
   const [editingSlug, setEditingSlug] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [editColor, setEditColor] = useState("")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState("")
+  const [newCategoryColor, setNewCategoryColor] = useState<string>(
+    CUSTOM_COLORS[0].value
+  )
   const [addError, setAddError] = useState("")
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
@@ -71,9 +76,9 @@ export function CategoryDialog({
       setEditingSlug(null)
       return
     }
-    // Find current label — skip if unchanged
+    // Find current — skip if nothing changed
     const current = categories.find((c) => c.slug === slug)
-    if (current && current.label === newLabel) {
+    if (current && current.label === newLabel && current.color === editColor) {
       setEditingSlug(null)
       return
     }
@@ -82,7 +87,12 @@ export function CategoryDialog({
       const res = await fetch("/api/expenses/categories", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rename", slug, newLabel }),
+        body: JSON.stringify({
+          action: "rename",
+          slug,
+          newLabel,
+          newColor: editColor,
+        }),
       })
       if (res.ok) {
         await fetchCategories()
@@ -131,7 +141,7 @@ export function CategoryDialog({
       const res = await fetch("/api/expenses/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label }),
+        body: JSON.stringify({ label, color: newCategoryColor }),
       })
       if (!res.ok) {
         const err = await res.json()
@@ -139,6 +149,7 @@ export function CategoryDialog({
         return
       }
       setNewCategoryName("")
+      setNewCategoryColor(CUSTOM_COLORS[0].value)
       setIsAdding(false)
       await fetchCategories()
       onChanged()
@@ -150,51 +161,78 @@ export function CategoryDialog({
   }
 
   const catsWithData = categories.filter((c) => c.count > 0)
-  const catsEmpty = categories.filter((c) => c.count === 0)
+  const catsEmpty = categories
+    .filter((c) => c.count === 0)
+    .sort((a, b) => {
+      // "other" always last
+      if (a.slug === "other") return 1
+      if (b.slug === "other") return -1
+      return 0
+    })
 
-  function renderEditRow(slug: string, color: string) {
+  function renderEditRow(slug: string) {
     return (
-      <div className="flex min-h-[44px] items-center gap-2 rounded-2xl bg-muted px-3 py-2">
-        <span
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-        <Input
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleRename(slug)
-            if (e.key === "Escape") setEditingSlug(null)
-          }}
-          className="h-7 flex-1 text-sm font-medium"
-          autoFocus
-          disabled={actionLoading === slug}
-        />
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={() => handleRename(slug)}
-          disabled={actionLoading === slug}
-          aria-label="Confirm rename"
-        >
-          <Check className="size-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={() => setEditingSlug(null)}
-          disabled={actionLoading === slug}
-          aria-label="Cancel rename"
-        >
-          <X className="size-3.5" />
-        </Button>
+      <div className="space-y-2 rounded-2xl bg-muted px-3 py-3">
+        <div className="flex min-h-[28px] items-center gap-2">
+          <span
+            className="size-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: editColor }}
+          />
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleRename(slug)
+              if (e.key === "Escape") setEditingSlug(null)
+            }}
+            className="h-7 flex-1 text-sm font-medium"
+            autoFocus
+            disabled={actionLoading === slug}
+          />
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => handleRename(slug)}
+            disabled={actionLoading === slug}
+            aria-label="Confirm rename"
+          >
+            <Check className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setEditingSlug(null)}
+            disabled={actionLoading === slug}
+            aria-label="Cancel rename"
+          >
+            <X className="size-3.5" />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-1.5 pl-4">
+          {CUSTOM_COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              title={c.name}
+              onClick={() => setEditColor(c.value)}
+              className="size-5 rounded-full transition-transform hover:scale-110"
+              style={{
+                backgroundColor: c.value,
+                boxShadow:
+                  editColor === c.value
+                    ? `0 0 0 2px var(--background), 0 0 0 3.5px ${c.value}`
+                    : undefined,
+              }}
+            />
+          ))}
+        </div>
       </div>
     )
   }
 
   function renderCategoryRow(cat: CategoryWithStats) {
     if (editingSlug === cat.slug) {
-      return <div key={cat.slug}>{renderEditRow(cat.slug, cat.color)}</div>
+      return <div key={cat.slug}>{renderEditRow(cat.slug)}</div>
     }
 
     const canEdit = cat.slug !== "other"
@@ -205,10 +243,12 @@ export function CategoryDialog({
         key={cat.slug}
         className="flex min-h-[44px] items-center gap-2 rounded-2xl px-3 py-2 transition-colors hover:bg-muted/50"
       >
-        <span
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: cat.color }}
-        />
+        {(() => {
+          const Icon = getIconComponent(cat.icon)
+          return (
+            <Icon className="size-4 shrink-0" style={{ color: cat.color }} />
+          )
+        })()}
         <span className="flex-1 truncate text-sm font-medium">{cat.label}</span>
         {cat.count > 0 ? (
           <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
@@ -227,6 +267,7 @@ export function CategoryDialog({
             onClick={() => {
               setEditingSlug(cat.slug)
               setEditValue(cat.label)
+              setEditColor(cat.color)
             }}
             disabled={actionLoading === cat.slug}
             aria-label={`Rename ${cat.label}`}
@@ -269,48 +310,71 @@ export function CategoryDialog({
           <div className="-mx-1 max-h-[60vh] space-y-1 overflow-y-auto px-1">
             {/* Add new category */}
             {isAdding ? (
-              <div className="flex min-h-[44px] items-center gap-2 rounded-2xl bg-muted px-3 py-2">
-                <span className="size-2.5 shrink-0 rounded-full bg-muted-foreground/40" />
-                <Input
-                  value={newCategoryName}
-                  onChange={(e) => {
-                    setNewCategoryName(e.target.value)
-                    setAddError("")
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAdd()
-                    if (e.key === "Escape") {
+              <div className="space-y-2 rounded-2xl bg-muted px-3 py-3">
+                <div className="flex min-h-[28px] items-center gap-2">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: newCategoryColor }}
+                  />
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => {
+                      setNewCategoryName(e.target.value)
+                      setAddError("")
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleAdd()
+                      if (e.key === "Escape") {
+                        setIsAdding(false)
+                        setNewCategoryName("")
+                        setAddError("")
+                      }
+                    }}
+                    placeholder="Category name"
+                    className="h-7 flex-1 text-sm font-medium"
+                    autoFocus
+                    disabled={actionLoading === "__add__"}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={handleAdd}
+                    disabled={actionLoading === "__add__"}
+                    aria-label="Confirm add"
+                  >
+                    <Check className="size-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => {
                       setIsAdding(false)
                       setNewCategoryName("")
                       setAddError("")
-                    }
-                  }}
-                  placeholder="Category name"
-                  className="h-7 flex-1 text-sm font-medium"
-                  autoFocus
-                  disabled={actionLoading === "__add__"}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={handleAdd}
-                  disabled={actionLoading === "__add__"}
-                  aria-label="Confirm add"
-                >
-                  <Check className="size-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => {
-                    setIsAdding(false)
-                    setNewCategoryName("")
-                    setAddError("")
-                  }}
-                  aria-label="Cancel add"
-                >
-                  <X className="size-3.5" />
-                </Button>
+                    }}
+                    aria-label="Cancel add"
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-1.5 pl-4">
+                  {CUSTOM_COLORS.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      title={c.name}
+                      onClick={() => setNewCategoryColor(c.value)}
+                      className="size-5 rounded-full transition-transform hover:scale-110"
+                      style={{
+                        backgroundColor: c.value,
+                        boxShadow:
+                          newCategoryColor === c.value
+                            ? `0 0 0 2px var(--background), 0 0 0 3.5px ${c.value}`
+                            : undefined,
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             ) : (
               <button

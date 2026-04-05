@@ -15,6 +15,7 @@ import type { Expense } from "@/lib/types"
 
 interface ExpenseItemProps {
   expense: Expense
+  onView: (expense: Expense) => void
   onEdit: (expense: Expense) => void
   onDelete: (expense: Expense) => void
   getLabel: (slug: string) => string
@@ -24,6 +25,7 @@ interface ExpenseItemProps {
 
 export function ExpenseItem({
   expense,
+  onView,
   onEdit,
   onDelete,
   getLabel,
@@ -35,7 +37,10 @@ export function ExpenseItem({
   const Icon = getIconComponent(getIcon(expense.category))
 
   return (
-    <div className="group flex items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/10 transition-colors duration-150 hover:bg-accent/50">
+    <div
+      className="group flex cursor-pointer items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/10 transition-colors duration-150 hover:bg-accent/50"
+      onClick={() => onView(expense)}
+    >
       <div
         className="flex size-8 shrink-0 items-center justify-center rounded-xl"
         style={{
@@ -74,29 +79,32 @@ export function ExpenseItem({
       </p>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="shrink-0 text-muted-foreground"
-            aria-label={`Actions for ${expense.title}`}
-          >
-            <MoreHorizontal className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-32">
-          <DropdownMenuItem onClick={() => onEdit(expense)}>
-            <Pencil />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => onDelete(expense)}
-          >
-            <Trash2 />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 text-muted-foreground"
+              aria-label={`Actions for ${expense.title}`}
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-32">
+            <DropdownMenuItem onClick={() => onEdit(expense)}>
+              <Pencil />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onDelete(expense)}
+            >
+              <Trash2 />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </div>
       </DropdownMenu>
     </div>
   )

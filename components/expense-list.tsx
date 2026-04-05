@@ -11,6 +11,7 @@ interface ExpenseListProps {
   expenses: Expense[]
   isLoading: boolean
   error?: string | null
+  onView: (expense: Expense) => void
   onEdit: (expense: Expense) => void
   onDelete: (expense: Expense) => void
   onAdd?: () => void
@@ -24,6 +25,7 @@ export function ExpenseList({
   expenses,
   isLoading,
   error,
+  onView,
   onEdit,
   onDelete,
   onAdd,
@@ -99,6 +101,7 @@ export function ExpenseList({
             <ExpenseItem
               key={String(expense._id)}
               expense={expense}
+              onView={onView}
               onEdit={onEdit}
               onDelete={onDelete}
               getLabel={getLabel}

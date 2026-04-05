@@ -71,6 +71,13 @@ export async function GET() {
       }
     })
 
+    // Sort: "other" always last, rest by order
+    result.sort((a, b) => {
+      if (a.slug === "other") return 1
+      if (b.slug === "other") return -1
+      return a.order - b.order
+    })
+
     return NextResponse.json(result)
   } catch (error) {
     console.error("GET /api/expenses/categories error:", error)
@@ -86,8 +93,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const label =
-      typeof body.label === "string" ? body.label.trim() : ""
+    const label = typeof body.label === "string" ? body.label.trim() : ""
 
     if (!label) {
       return NextResponse.json(
@@ -108,10 +114,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Auto-assign icon and color based on current count
+    // Use provided color or auto-assign from palette
     const totalCount = await categoriesCol.countDocuments()
-    const icon = ICON_POOL[totalCount % ICON_POOL.length]
-    const color = COLOR_PALETTE[totalCount % COLOR_PALETTE.length]
+    const icon = "Tag"
+    const color =
+      typeof body.color === "string" && body.color
+        ? body.color
+        : COLOR_PALETTE[totalCount % COLOR_PALETTE.length]
 
     const doc = {
       slug,
@@ -166,11 +175,12 @@ export async function PATCH(request: NextRequest) {
         )
       }
 
-      // Only update the label — slug stays stable, expenses are unaffected
-      const result = await categoriesCol.updateOne(
-        { slug },
-        { $set: { label: trimmed } }
-      )
+      // Update label and optionally color — slug stays stable
+      const update: Record<string, string> = { label: trimmed }
+      if (typeof body.newColor === "string" && body.newColor) {
+        update.color = body.newColor
+      }
+      const result = await categoriesCol.updateOne({ slug }, { $set: update })
 
       if (result.matchedCount === 0) {
         return NextResponse.json(

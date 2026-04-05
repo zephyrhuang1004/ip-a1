@@ -17,22 +17,26 @@ A single-page expense tracking application that helps users log, categorize, and
 ## Features
 
 - Full CRUD operations on expenses (create, read, update, delete)
+- Full CRUD on categories (create with custom color, rename with color change, delete)
 - Category-based organization with 8 default categories and custom category support
 - All categories stored in MongoDB as single source of truth (auto-seeded on first use)
+- Custom category creation with color picker (12 color options)
 - Category rename updates label only (slug stays stable, no orphan references)
 - Filter expenses by category and month
 - Expense list grouped by date sections
+- Click expense to view detail dialog (with edit/delete actions)
 - Analytics dashboard with three chart cards:
-  - Daily Spending — stacked bar chart (last 30 days by category)
-  - By Category — horizontal bar chart with labels / donut chart with center total
-  - Monthly Trend — area chart with gradient fill and average reference line
+  - Daily Spending — stacked bar chart (last 30 days by category, custom rounded corners)
+  - By Category — horizontal bar chart with labels / donut chart with center total and legend
+  - Monthly Trend — area chart with gradient fill, average reference line, and value labels
 - Pill-style toggle to switch between chart types (bar/pie, area/bar)
 - Stats overview: current month total, weekly average, top category
-- Category filter dropdown with colored icons per category
+- Category filter dropdown with colored icons per category and hover tint
 - Desktop date picker (shadcn Calendar + Popover), native input on mobile
 - Responsive mobile-first design
 - Dark mode / light mode toggle
 - Form validation with meaningful error messages
+- Duplicate category detection with inline warning
 - Toast notifications for user feedback
 - Delete confirmation dialog to prevent accidental removal
 - Skeleton loading states during data fetch
@@ -61,8 +65,9 @@ ip-a1/
 │   ├── expense-list.tsx            # Expense list grouped by date
 │   ├── expense-item.tsx            # Individual expense card
 │   ├── expense-dialog.tsx          # Add / Edit expense form dialog
+│   ├── expense-detail-dialog.tsx   # Expense detail view dialog
 │   ├── confirm-dialog.tsx          # Delete confirmation dialog
-│   ├── category-dialog.tsx         # Manage categories (rename / delete / add)
+│   ├── category-dialog.tsx         # Manage categories (rename / delete / add with color picker)
 │   ├── chart-toggle.tsx            # Pill-style chart type toggle
 │   ├── daily-chart.tsx             # Stacked bar chart (daily spending by category)
 │   ├── category-chart.tsx          # Bar / Donut chart (by category)

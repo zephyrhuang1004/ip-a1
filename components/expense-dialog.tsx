@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { CalendarIcon } from "lucide-react"
+import { getIconComponent } from "@/lib/category-icon-map"
+import { CUSTOM_COLORS } from "@/lib/constants"
 import { format, parse } from "date-fns"
 import {
   Dialog,
@@ -59,6 +61,7 @@ export function ExpenseDialog({
   const [form, setForm] = useState<ExpenseFormData>(INITIAL_FORM)
   const [isCustomCategory, setIsCustomCategory] = useState(false)
   const [customCategoryInput, setCustomCategoryInput] = useState("")
+  const [customColor, setCustomColor] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -81,6 +84,7 @@ export function ExpenseDialog({
         setForm(INITIAL_FORM)
         setIsCustomCategory(false)
         setCustomCategoryInput("")
+        setCustomColor(CUSTOM_COLORS[0].value)
       }
       setErrors({})
     }
@@ -109,6 +113,25 @@ export function ExpenseDialog({
       const category = isCustomCategory
         ? customCategoryInput.trim().toLowerCase()
         : form.category
+
+      // Create category in DB if custom
+      if (isCustomCategory && category) {
+        const catRes = await fetch("/api/expenses/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            label: customCategoryInput.trim(),
+            color: customColor,
+          }),
+        })
+        if (!catRes.ok && catRes.status !== 409) {
+          const err = await catRes.json()
+          setErrors({ category: err.error ?? "Failed to create category" })
+          setIsSubmitting(false)
+          return
+        }
+      }
+
       await onSubmit({ ...form, category })
       onOpenChange(false)
     } catch {
@@ -166,21 +189,73 @@ export function ExpenseDialog({
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.slug} value={cat.slug}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
+                {categories.map((cat) => {
+                  const Icon = getIconComponent(cat.icon)
+                  return (
+                    <SelectItem
+                      key={cat.slug}
+                      value={cat.slug}
+                      style={
+                        {
+                          "--item-focus-bg": `color-mix(in oklch, ${cat.color} 12%, transparent)`,
+                        } as React.CSSProperties
+                      }
+                    >
+                      <Icon
+                        className="size-4 shrink-0"
+                        style={{ color: cat.color }}
+                      />
+                      {cat.label}
+                    </SelectItem>
+                  )
+                })}
                 <SelectItem value="__custom__">+ Add custom...</SelectItem>
               </SelectContent>
             </Select>
             {isCustomCategory && (
-              <Input
-                placeholder="Enter custom category"
-                value={customCategoryInput}
-                onChange={(e) => setCustomCategoryInput(e.target.value)}
-                autoFocus
-              />
+              <div className="space-y-2">
+                <Input
+                  placeholder="Enter custom category"
+                  value={customCategoryInput}
+                  onChange={(e) => setCustomCategoryInput(e.target.value)}
+                  autoFocus
+                />
+                <div>
+                  <p className="mb-1.5 text-xs text-muted-foreground">Color</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CUSTOM_COLORS.map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        title={c.name}
+                        onClick={() => setCustomColor(c.value)}
+                        className="size-6 rounded-full ring-offset-2 ring-offset-background transition-transform hover:scale-110"
+                        style={{
+                          backgroundColor: c.value,
+                          boxShadow:
+                            customColor === c.value
+                              ? `0 0 0 2px var(--background), 0 0 0 4px ${c.value}`
+                              : undefined,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {customCategoryInput.trim() &&
+                  categories.some(
+                    (c) =>
+                      c.slug ===
+                      customCategoryInput
+                        .trim()
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")
+                  ) && (
+                    <p className="text-xs text-amber-600">
+                      This category already exists — expense will use the
+                      existing one.
+                    </p>
+                  )}
+              </div>
             )}
             {errors.category && (
               <p className="text-xs text-destructive">{errors.category}</p>

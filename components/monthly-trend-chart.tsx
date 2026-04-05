@@ -7,6 +7,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   ReferenceLine,
   XAxis,
   YAxis,
@@ -45,7 +46,7 @@ const chartConfig = {
 function formatMonthLabel(month: string): string {
   const [year, m] = month.split("-")
   const date = new Date(parseInt(year), parseInt(m) - 1)
-  return date.toLocaleDateString("en-AU", { month: "short", year: "2-digit" })
+  return date.toLocaleDateString("en-AU", { month: "short" })
 }
 
 export function MonthlyTrendChart({
@@ -53,6 +54,33 @@ export function MonthlyTrendChart({
   isLoading,
 }: MonthlyTrendChartProps) {
   const [chartType, setChartType] = useState<"area" | "bar">("area")
+
+  const formatLabel = (v: number) =>
+    `$${v.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderLabel = (props: any) => {
+    const { x, y, value, index } = props as {
+      x: number
+      y: number
+      value: number
+      index: number
+    }
+    const total = data.length
+    const isFirst = index === 0
+    const isLast = index === total - 1
+    return (
+      <text
+        x={isFirst ? x + 14 : isLast ? x - 14 : x}
+        y={isFirst ? y : isLast ? y : (y as number) - 10}
+        textAnchor={isFirst ? "start" : isLast ? "end" : "middle"}
+        dominantBaseline={isFirst || isLast ? "middle" : "auto"}
+        className="fill-foreground text-xs"
+      >
+        {formatLabel(value)}
+      </text>
+    )
+  }
 
   const data = useMemo(
     () =>
@@ -120,8 +148,8 @@ export function MonthlyTrendChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis dataKey="month" tickLine={false} tick={{ fontSize: 12 }} />
+              <YAxis tickLine={false} tick={{ fontSize: 12 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ReferenceLine
                 y={average}
@@ -148,13 +176,15 @@ export function MonthlyTrendChart({
                 activeDot={{
                   r: 6,
                 }}
-              />
+              >
+                <LabelList dataKey="total" content={renderLabel} />
+              </Area>
             </AreaChart>
           ) : (
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis dataKey="month" tickLine={false} tick={{ fontSize: 12 }} />
+              <YAxis tickLine={false} tick={{ fontSize: 12 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ReferenceLine
                 y={average}
@@ -162,7 +192,9 @@ export function MonthlyTrendChart({
                 strokeDasharray="4 4"
                 strokeOpacity={0.5}
               />
-              <Bar dataKey="total" fill="var(--primary)" radius={5} />
+              <Bar dataKey="total" fill="var(--primary)" radius={5}>
+                <LabelList dataKey="total" content={renderLabel} />
+              </Bar>
             </BarChart>
           )}
         </ChartContainer>

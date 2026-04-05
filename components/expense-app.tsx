@@ -10,6 +10,7 @@ import { ExpenseList } from "@/components/expense-list"
 import { ExpenseDialog } from "@/components/expense-dialog"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { CategoryDialog } from "@/components/category-dialog"
+import { ExpenseDetailDialog } from "@/components/expense-detail-dialog"
 import { CategoryChart } from "@/components/category-chart"
 import { MonthlyTrendChart } from "@/components/monthly-trend-chart"
 import { DailyChart } from "@/components/daily-chart"
@@ -55,6 +56,9 @@ export function ExpenseApp() {
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+
+  // Detail view state
+  const [viewingExpense, setViewingExpense] = useState<Expense | null>(null)
 
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null)
@@ -147,6 +151,7 @@ export function ExpenseApp() {
             expenses={expenses}
             isLoading={isLoading}
             error={expensesError}
+            onView={setViewingExpense}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
             onAdd={handleAdd}
@@ -187,6 +192,7 @@ export function ExpenseApp() {
         open={categoryDialogOpen}
         onOpenChange={setCategoryDialogOpen}
         onChanged={async () => {
+          setCategoryFilter("all")
           await Promise.all([
             refetchStats(),
             refetchExpenses(),
@@ -206,7 +212,20 @@ export function ExpenseApp() {
         isLoading={isDeleting}
       />
 
-      <footer className="mt-auto border-t pt-4 pb-2 text-center text-[11px] text-muted-foreground">
+      <ExpenseDetailDialog
+        open={!!viewingExpense}
+        onOpenChange={(open) => {
+          if (!open) setViewingExpense(null)
+        }}
+        expense={viewingExpense}
+        onEdit={handleEdit}
+        onDelete={handleDeleteRequest}
+        getLabel={getLabel}
+        getColor={getColor}
+        getIcon={getIcon}
+      />
+
+      <footer className="mt-auto pt-8 pb-2 text-center text-[11px] text-muted-foreground">
         SpendWise &mdash; UTS 32516 Internet Programming &middot; Assignment 1
       </footer>
 
