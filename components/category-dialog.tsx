@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Check, Pencil, Plus, Trash2, X } from "lucide-react"
+import { Check, Pencil, Plus, Tag, Trash2, X } from "lucide-react"
 import { formatCurrency, CUSTOM_COLORS } from "@/lib/constants"
 import { getIconComponent } from "@/lib/category-icon-map"
 import type { CategoryWithStats } from "@/lib/types"
@@ -171,13 +171,12 @@ export function CategoryDialog({
     })
 
   function renderEditRow(slug: string) {
+    const cat = categories.find((c) => c.slug === slug)
+    const EditIcon = getIconComponent(cat?.icon ?? "Tag")
     return (
       <div className="space-y-2 rounded-2xl bg-muted px-3 py-3">
         <div className="flex min-h-[28px] items-center gap-2">
-          <span
-            className="size-2.5 shrink-0 rounded-full"
-            style={{ backgroundColor: editColor }}
-          />
+          <EditIcon className="size-4 shrink-0" style={{ color: editColor }} />
           <Input
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
@@ -312,9 +311,9 @@ export function CategoryDialog({
             {isAdding ? (
               <div className="space-y-2 rounded-2xl bg-muted px-3 py-3">
                 <div className="flex min-h-[28px] items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: newCategoryColor }}
+                  <Tag
+                    className="size-4 shrink-0"
+                    style={{ color: newCategoryColor }}
                   />
                   <Input
                     value={newCategoryName}
