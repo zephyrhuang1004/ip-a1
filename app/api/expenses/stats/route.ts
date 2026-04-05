@@ -34,7 +34,7 @@ export async function GET() {
                 total: { $sum: "$amount" },
               },
             },
-            { $sort: { _id: 1 } },
+            { $sort: { _id: -1 } },
           ])
           .toArray(),
 
@@ -49,7 +49,10 @@ export async function GET() {
         collection
           .aggregate<{
             total: number
-          }>([{ $match: { date: { $regex: `^${currentMonth}` } } }, { $group: { _id: null, total: { $sum: "$amount" } } }])
+          }>([
+            { $match: { date: { $regex: `^${currentMonth}` } } },
+            { $group: { _id: null, total: { $sum: "$amount" } } },
+          ])
           .toArray(),
       ])
 

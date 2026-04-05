@@ -55,10 +55,12 @@ export function MonthlyTrendChart({
     return <Skeleton className="h-[300px]" />
   }
 
-  const data = stats.byMonth.map((item) => ({
-    month: formatMonthLabel(item.month),
-    total: item.total,
-  }))
+  const data = [...stats.byMonth]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map((item) => ({
+      month: formatMonthLabel(item.month),
+      total: item.total,
+    }))
 
   if (data.length === 0) {
     return (

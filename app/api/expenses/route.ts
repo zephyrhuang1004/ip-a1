@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const collection = await getExpensesCollection()
     const expenses = await collection
       .find(filter)
-      .sort({ date: -1, createdAt: -1 })
+      .sort({ date: -1, createdAt: -1, _id: -1 })
       .toArray()
 
     return NextResponse.json(expenses)
