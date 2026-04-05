@@ -1,17 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  ReferenceLine,
   XAxis,
   YAxis,
 } from "recharts"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -22,9 +24,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart3, TrendingUp } from "lucide-react"
+import { ChartToggle } from "@/components/chart-toggle"
+import { formatCurrency } from "@/lib/constants"
 import type { ExpenseStats } from "@/lib/types"
 
 interface MonthlyTrendChartProps {
@@ -49,18 +52,27 @@ export function MonthlyTrendChart({
   stats,
   isLoading,
 }: MonthlyTrendChartProps) {
-  const [chartType, setChartType] = useState<"line" | "bar">("line")
+  const [chartType, setChartType] = useState<"area" | "bar">("area")
+
+  const data = useMemo(
+    () =>
+      [...stats.byMonth]
+        .sort((a, b) => a.month.localeCompare(b.month))
+        .map((item) => ({
+          month: formatMonthLabel(item.month),
+          total: item.total,
+        })),
+    [stats.byMonth]
+  )
+
+  const average = useMemo(() => {
+    if (data.length === 0) return 0
+    return data.reduce((sum, d) => sum + d.total, 0) / data.length
+  }, [data])
 
   if (isLoading) {
-    return <Skeleton className="h-[300px]" />
+    return <Skeleton className="h-[340px]" />
   }
-
-  const data = [...stats.byMonth]
-    .sort((a, b) => a.month.localeCompare(b.month))
-    .map((item) => ({
-      month: formatMonthLabel(item.month),
-      total: item.total,
-    }))
 
   if (data.length === 0) {
     return (
@@ -75,58 +87,82 @@ export function MonthlyTrendChart({
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle className="text-base">Monthly Trend</CardTitle>
-          <CardDescription>Spending over time</CardDescription>
-        </div>
-        <div className="flex gap-1">
-          <Button
-            variant={chartType === "line" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setChartType("line")}
-            aria-label="Line chart"
-          >
-            <TrendingUp className="size-4" />
-          </Button>
-          <Button
-            variant={chartType === "bar" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setChartType("bar")}
-            aria-label="Bar chart"
-          >
-            <BarChart3 className="size-4" />
-          </Button>
-        </div>
+      <CardHeader>
+        <CardTitle className="text-base">Monthly Trend</CardTitle>
+        <CardDescription>Spending over time</CardDescription>
+        <CardAction>
+          <ChartToggle
+            value={chartType}
+            onChange={setChartType}
+            options={[
+              { value: "area", icon: TrendingUp, label: "Area" },
+              { value: "bar", icon: BarChart3, label: "Bar" },
+            ]}
+          />
+        </CardAction>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[250px] w-full">
-          {chartType === "line" ? (
-            <LineChart data={data}>
+        <ChartContainer config={chartConfig} className="h-[280px] w-full">
+          {chartType === "area" ? (
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor="var(--primary)"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--primary)"
+                    stopOpacity={0.02}
+                  />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Line
+              <ReferenceLine
+                y={average}
+                stroke="var(--muted-foreground)"
+                strokeDasharray="4 4"
+                strokeOpacity={0.5}
+                label={{
+                  value: `Avg ${formatCurrency(average)}`,
+                  position: "insideTopRight",
+                  className: "fill-muted-foreground text-xs",
+                }}
+              />
+              <Area
                 type="monotone"
                 dataKey="total"
                 stroke="var(--primary)"
                 strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
+                fill="url(#trendGradient)"
+                dot={{
+                  fill: "var(--primary)",
+                  stroke: "var(--primary)",
+                  fillOpacity: 1,
+                }}
+                activeDot={{
+                  r: 6,
+                }}
               />
-            </LineChart>
+            </AreaChart>
           ) : (
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar
-                dataKey="total"
-                fill="var(--primary)"
-                radius={[4, 4, 0, 0]}
+              <ReferenceLine
+                y={average}
+                stroke="var(--muted-foreground)"
+                strokeDasharray="4 4"
+                strokeOpacity={0.5}
               />
+              <Bar dataKey="total" fill="var(--primary)" radius={5} />
             </BarChart>
           )}
         </ChartContainer>

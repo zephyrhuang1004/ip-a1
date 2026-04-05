@@ -12,6 +12,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 import { CategoryDialog } from "@/components/category-dialog"
 import { CategoryChart } from "@/components/category-chart"
 import { MonthlyTrendChart } from "@/components/monthly-trend-chart"
+import { DailyChart } from "@/components/daily-chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useExpenses } from "@/hooks/use-expenses"
 import { useStats } from "@/hooks/use-stats"
@@ -156,7 +157,14 @@ export function ExpenseApp() {
           />
         </TabsContent>
 
-        <TabsContent value="analytics" className="mt-4 space-y-6">
+        <TabsContent value="analytics" className="mt-4 space-y-4">
+          <DailyChart
+            expenses={expenses}
+            isLoading={isLoading}
+            categories={categories}
+            getLabel={getLabel}
+            getColor={getColor}
+          />
           <CategoryChart
             stats={stats}
             isLoading={statsLoading}

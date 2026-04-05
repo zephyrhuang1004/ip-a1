@@ -1,9 +1,20 @@
 "use client"
 
-import { useState } from "react"
-import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts"
+import { useMemo, useState } from "react"
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Label,
+  LabelList,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from "recharts"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -13,10 +24,13 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react"
+import { ChartToggle } from "@/components/chart-toggle"
+import { formatCurrency } from "@/lib/constants"
 import type { ExpenseStats } from "@/lib/types"
 
 interface CategoryChartProps {
@@ -34,15 +48,30 @@ export function CategoryChart({
 }: CategoryChartProps) {
   const [chartType, setChartType] = useState<"bar" | "pie">("bar")
 
-  if (isLoading) {
-    return <Skeleton className="h-[300px]" />
-  }
+  const data = useMemo(
+    () =>
+      stats.byCategory.map((item) => ({
+        name: getLabel(item.category),
+        value: item.total,
+        count: item.count,
+        fill: getColor(item.category),
+      })),
+    [stats.byCategory, getLabel, getColor]
+  )
 
-  const data = stats.byCategory.map((item) => ({
-    name: getLabel(item.category),
-    value: item.total,
-    fill: getColor(item.category),
-  }))
+  const chartConfig = useMemo(
+    () =>
+      Object.fromEntries(
+        data.map((item) => [item.name, { label: item.name, color: item.fill }])
+      ),
+    [data]
+  )
+
+  const total = useMemo(() => data.reduce((sum, d) => sum + d.value, 0), [data])
+
+  if (isLoading) {
+    return <Skeleton className="h-[340px]" />
+  }
 
   if (data.length === 0) {
     return (
@@ -55,71 +84,105 @@ export function CategoryChart({
     )
   }
 
-  const chartConfig = Object.fromEntries(
-    data.map((item) => [item.name, { label: item.name, color: item.fill }])
-  )
-
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle className="text-base">By Category</CardTitle>
-          <CardDescription>Spending breakdown by category</CardDescription>
-        </div>
-        <div className="flex gap-1">
-          <Button
-            variant={chartType === "bar" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setChartType("bar")}
-            aria-label="Bar chart"
-          >
-            <BarChart3 className="size-4" />
-          </Button>
-          <Button
-            variant={chartType === "pie" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setChartType("pie")}
-            aria-label="Pie chart"
-          >
-            <PieChartIcon className="size-4" />
-          </Button>
-        </div>
+      <CardHeader>
+        <CardTitle className="text-base">By Category</CardTitle>
+        <CardDescription>Spending breakdown by category</CardDescription>
+        <CardAction>
+          <ChartToggle
+            value={chartType}
+            onChange={setChartType}
+            options={[
+              { value: "bar", icon: BarChart3, label: "Bar" },
+              { value: "pie", icon: PieChartIcon, label: "Pie" },
+            ]}
+          />
+        </CardAction>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+        <ChartContainer
+          config={chartConfig}
+          className={
+            chartType === "bar" ? "h-[280px] w-full" : "h-[320px] w-full"
+          }
+        >
           {chartType === "bar" ? (
-            <BarChart data={data} layout="vertical">
+            <BarChart data={data} layout="vertical" margin={{ right: 60 }}>
               <XAxis type="number" hide />
               <YAxis
                 type="category"
                 dataKey="name"
-                width={100}
-                tick={{ fontSize: 12 }}
+                width={80}
+                tick={{ fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="value" radius={5}>
                 {data.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />
                 ))}
+                <LabelList
+                  dataKey="value"
+                  position="right"
+                  formatter={(v: number) => formatCurrency(v)}
+                  className="fill-muted-foreground text-[11px]"
+                />
               </Bar>
             </BarChart>
           ) : (
             <PieChart>
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
               <Pie
                 data={data}
                 dataKey="value"
                 nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                paddingAngle={2}
+                innerRadius={60}
+                outerRadius={100}
+                strokeWidth={5}
               >
                 {data.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />
                 ))}
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                      return (
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-2xl font-bold"
+                          >
+                            {formatCurrency(total)}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy ?? 0) + 24}
+                            className="fill-muted-foreground"
+                          >
+                            Total
+                          </tspan>
+                        </text>
+                      )
+                    }
+                  }}
+                />
               </Pie>
+              <ChartLegend
+                content={
+                  <ChartLegendContent className="flex-wrap justify-center text-xs" />
+                }
+              />
             </PieChart>
           )}
         </ChartContainer>
