@@ -9,8 +9,8 @@ A single-page expense tracking application that helps users log, categorize, and
 | Frontend | React 19, Next.js 16 (App Router) |
 | Styling | Tailwind CSS 4, shadcn/ui (Radix UI primitives) |
 | Routing | Next.js App Router (single-page with client-side tab navigation) |
-| Data Visualization | Recharts (bar chart, pie chart, line chart) |
-| Database | MongoDB Atlas (via `mongodb` driver) |
+| Data Visualization | Recharts (area chart, bar chart, pie chart, stacked bar) |
+| Database | MongoDB Atlas (via `mongodb` driver, auto-seeding) |
 | Validation | Zod (shared schema for client + server) |
 | Theming | next-themes (system / light / dark mode) |
 
@@ -18,15 +18,23 @@ A single-page expense tracking application that helps users log, categorize, and
 
 - Full CRUD operations on expenses (create, read, update, delete)
 - Category-based organization with 8 default categories and custom category support
+- All categories stored in MongoDB as single source of truth (auto-seeded on first use)
+- Category rename updates label only (slug stays stable, no orphan references)
 - Filter expenses by category and month
-- Analytics dashboard with category breakdown (bar / pie chart) and monthly trend (line / bar chart)
-- Real-time stats overview: total spent, current month spending, top category
+- Expense list grouped by date sections
+- Analytics dashboard with three chart cards:
+  - Daily Spending — stacked bar chart (last 30 days by category)
+  - By Category — horizontal bar chart with labels / donut chart with center total
+  - Monthly Trend — area chart with gradient fill and average reference line
+- Pill-style toggle to switch between chart types (bar/pie, area/bar)
+- Stats overview: current month total, weekly average, top category
+- Category filter dropdown with colored icons per category
+- Desktop date picker (shadcn Calendar + Popover), native input on mobile
 - Responsive mobile-first design
 - Dark mode / light mode toggle
 - Form validation with meaningful error messages
 - Toast notifications for user feedback
 - Delete confirmation dialog to prevent accidental removal
-- Date picker for easy date selection
 - Skeleton loading states during data fetch
 - Graceful error handling with retry on API failure
 - Accessible UI (Lighthouse Accessibility score: 100)
@@ -40,39 +48,45 @@ ip-a1/
 │   │   └── expenses/
 │   │       ├── route.ts            # GET (list + filter) / POST (create)
 │   │       ├── [id]/route.ts       # PUT (update) / DELETE (remove)
-│   │       ├── categories/route.ts # GET custom categories
+│   │       ├── categories/route.ts # GET/POST/PATCH categories (auto-seed)
 │   │       └── stats/route.ts      # GET aggregated stats (MongoDB aggregation)
 │   ├── layout.tsx                  # Root layout with theme provider
 │   ├── page.tsx                    # Entry point — renders <ExpenseApp />
-│   └── globals.css                 # Tailwind config + custom CSS variables
+│   └── globals.css                 # Tailwind config + CSS variables
 ├── components/
 │   ├── expense-app.tsx             # Main app shell (state management, dialogs)
 │   ├── header.tsx                  # App header with logo + theme toggle
-│   ├── stats-overview.tsx          # Summary cards (total, this month, top category)
-│   ├── expense-toolbar.tsx         # Filters + Add Expense button
-│   ├── expense-list.tsx            # Scrollable expense list
+│   ├── stats-overview.tsx          # Summary cards (this month, weekly avg, top category)
+│   ├── expense-toolbar.tsx         # Filters + Categories + Add Expense
+│   ├── expense-list.tsx            # Expense list grouped by date
 │   ├── expense-item.tsx            # Individual expense card
 │   ├── expense-dialog.tsx          # Add / Edit expense form dialog
 │   ├── confirm-dialog.tsx          # Delete confirmation dialog
-│   ├── category-dialog.tsx         # Manage custom categories dialog
-│   ├── category-chart.tsx          # Bar / Pie chart (by category)
-│   ├── monthly-trend-chart.tsx     # Line / Bar chart (monthly trend)
+│   ├── category-dialog.tsx         # Manage categories (rename / delete / add)
+│   ├── chart-toggle.tsx            # Pill-style chart type toggle
+│   ├── daily-chart.tsx             # Stacked bar chart (daily spending by category)
+│   ├── category-chart.tsx          # Bar / Donut chart (by category)
+│   ├── monthly-trend-chart.tsx     # Area / Bar chart (monthly trend + avg line)
 │   ├── empty-state.tsx             # Empty state illustration
 │   ├── theme-provider.tsx          # next-themes wrapper
 │   └── ui/                         # shadcn/ui primitives (button, card, dialog, etc.)
 ├── hooks/
 │   ├── use-expenses.ts             # Expense CRUD hook with fetch + caching
+│   ├── use-categories.ts           # Categories hook (fetch, lookup helpers)
 │   ├── use-stats.ts                # Stats fetching hook
+│   ├── use-media-query.ts          # Responsive media query hook
 │   └── use-debounce.ts             # Debounce utility hook
 ├── lib/
 │   ├── db.ts                       # MongoDB client singleton
-│   ├── types.ts                    # TypeScript interfaces (Expense, Stats, etc.)
+│   ├── types.ts                    # TypeScript interfaces (Expense, Category, Stats)
 │   ├── schemas.ts                  # Zod validation schemas
-│   ├── constants.ts                # Category definitions, currency formatting
+│   ├── constants.ts                # Seed categories, color palette, currency formatting
+│   ├── category-icon-map.ts        # Icon string → React component mapping
 │   └── utils.ts                    # Tailwind merge utility
+├── db-export.json                  # Database export (expenses + categories)
 └── public/                         # Static assets
 ```
 
 ## Challenges Overcome
 
-Building a seamless single-page experience with Next.js App Router required careful separation between server-side API routes and client-side state management -- all CRUD operations go through REST endpoints while the UI remains a single React component tree that never triggers a full page reload. Implementing the MongoDB aggregation pipeline for real-time statistics (category breakdown and monthly trends) was another challenge, as it required running four parallel aggregation queries efficiently while keeping the API response fast. Handling dark mode across the entire app, including the Recharts charts which don't natively support CSS variables, involved mapping custom CSS color tokens to chart components. Finally, managing form state for both "add" and "edit" flows through a single dialog component while keeping Zod validation consistent between client and server required thoughtful schema sharing across the stack.
+Building a seamless single-page experience with Next.js App Router required careful separation between server-side API routes and client-side state management — all CRUD operations go through REST endpoints while the UI remains a single React component tree that never triggers a full page reload. The category system initially used hardcoded defaults in code, which caused a "ghost category" bug when renaming — solving this required migrating to a fully database-driven architecture where all categories (including defaults) live in MongoDB with auto-seeding, and rename operations update only the label while keeping the slug stable. Implementing the analytics dashboard with three distinct chart types (stacked bar, donut, area) and interactive chart-type toggles required building custom recharts shapes for proper stacked bar rounded corners, as recharts applies radius per Bar component rather than per cell. Finally, achieving Lighthouse scores of 100 across Accessibility, Best Practices, and SEO while working around Tailwind v4's CSS layer priority issues (which broke shadcn's destructive variant styling) required debugging at the CSS specificity level and patching component internals.
