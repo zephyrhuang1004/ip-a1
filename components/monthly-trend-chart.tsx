@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import {
   Area,
   AreaChart,
@@ -59,6 +60,7 @@ export function MonthlyTrendChart({
   onPeriodChange,
 }: MonthlyTrendChartProps) {
   const [chartType, setChartType] = useState<"area" | "bar">("area")
+  const isDesktop = useMediaQuery("(min-width: 640px)")
 
   const formatLabel = (v: number) =>
     `$${v.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -95,7 +97,7 @@ export function MonthlyTrendChart({
     }))
 
   const maxTotal = data.reduce((max, d) => Math.max(max, d.total), 0)
-  const yAxisWidth = Math.ceil(maxTotal).toString().length * 7 + 4
+  const yAxisWidth = Math.ceil(maxTotal).toString().length * 9 + 6
 
   const average =
     data.length > 0
@@ -139,7 +141,7 @@ export function MonthlyTrendChart({
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[280px] w-full">
           {chartType === "area" ? (
-            <AreaChart data={data} margin={{ top: 20 }}>
+            <AreaChart data={data} margin={{ top: 20, right: 15 }}>
               <defs>
                 <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop
@@ -155,7 +157,12 @@ export function MonthlyTrendChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+                interval={data.length > 6 ? "equidistantPreserveStart" : 0}
+              />
               <YAxis
                 tickLine={false}
                 axisLine={false}
@@ -189,13 +196,20 @@ export function MonthlyTrendChart({
                   r: 6,
                 }}
               >
-                <LabelList dataKey="total" content={renderLabel} />
+                {isDesktop && (
+                  <LabelList dataKey="total" content={renderLabel} />
+                )}
               </Area>
             </AreaChart>
           ) : (
-            <BarChart data={data} margin={{ top: 20 }}>
+            <BarChart data={data} margin={{ top: 20, right: 15 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+                interval={data.length > 6 ? "equidistantPreserveStart" : 0}
+              />
               <YAxis
                 tickLine={false}
                 axisLine={false}
@@ -215,13 +229,15 @@ export function MonthlyTrendChart({
                 }}
               />
               <Bar dataKey="total" fill="var(--primary)" radius={5}>
-                <LabelList
-                  dataKey="total"
-                  position="top"
-                  formatter={formatLabel}
-                  className="fill-foreground text-xs"
-                  offset={8}
-                />
+                {isDesktop && (
+                  <LabelList
+                    dataKey="total"
+                    position="top"
+                    formatter={formatLabel}
+                    className="fill-foreground text-xs"
+                    offset={8}
+                  />
+                )}
               </Bar>
             </BarChart>
           )}

@@ -126,7 +126,7 @@ export function DailyChart({
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 10 }}
-              width={Math.ceil(maxTotal).toString().length * 6 + 4}
+              width={Math.ceil(maxTotal).toString().length * 7 + 6}
             />
             <ChartTooltip
               content={({ active, payload, label }) => {
@@ -176,10 +176,12 @@ export function DailyChart({
                   )
                   const isFirst = nonZero[0] === slug
                   const isLast = nonZero[nonZero.length - 1] === slug
-                  // Clamp radius to half of height to prevent invalid path
-                  const maxR = Math.floor(height / 2)
-                  const R = Math.min(4, maxR)
-                  if (R <= 0) {
+                  const R = Math.min(
+                    4,
+                    Math.floor(height / 2),
+                    Math.floor(width / 2)
+                  )
+                  if (R <= 0 || width < 4) {
                     return (
                       <rect
                         x={x}
