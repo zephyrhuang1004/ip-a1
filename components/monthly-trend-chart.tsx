@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import {
   Area,
   AreaChart,
@@ -82,21 +82,17 @@ export function MonthlyTrendChart({
     )
   }
 
-  const data = useMemo(
-    () =>
-      [...stats.byMonth]
-        .sort((a, b) => a.month.localeCompare(b.month))
-        .map((item) => ({
-          month: formatMonthLabel(item.month),
-          total: item.total,
-        })),
-    [stats.byMonth]
-  )
+  const data = [...stats.byMonth]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map((item) => ({
+      month: formatMonthLabel(item.month),
+      total: item.total,
+    }))
 
-  const average = useMemo(() => {
-    if (data.length === 0) return 0
-    return data.reduce((sum, d) => sum + d.total, 0) / data.length
-  }, [data])
+  const average =
+    data.length > 0
+      ? data.reduce((sum, d) => sum + d.total, 0) / data.length
+      : 0
 
   if (isLoading) {
     return <Skeleton className="h-[340px]" />
