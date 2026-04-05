@@ -193,7 +193,13 @@ export function MonthlyTrendChart({
                 strokeOpacity={0.5}
               />
               <Bar dataKey="total" fill="var(--primary)" radius={5}>
-                <LabelList dataKey="total" content={renderLabel} />
+                <LabelList
+                  dataKey="total"
+                  position="top"
+                  formatter={formatLabel}
+                  className="fill-foreground text-xs"
+                  offset={8}
+                />
               </Bar>
             </BarChart>
           )}
