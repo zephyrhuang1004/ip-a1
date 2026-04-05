@@ -25,12 +25,14 @@ A single-page expense tracking application that helps users log, categorize, and
 - Filter expenses by category and month
 - Expense list grouped by date sections
 - Click expense to view detail dialog (with edit/delete actions)
-- Analytics dashboard with three chart cards:
+- Analytics dashboard with period filtering and three chart cards:
   - Daily Spending — stacked bar chart (last 30 days by category, custom rounded corners)
   - By Category — horizontal bar chart with labels / donut chart with center total and legend
   - Monthly Trend — area chart with gradient fill, average reference line, and value labels
+- Period selector (This Month / Last 3 Months / Last 6 Months / Last 12 Months / All Time) synced across Category and Monthly Trend charts
 - Pill-style toggle to switch between chart types (bar/pie, area/bar)
-- Stats overview: current month total, weekly average, top category
+- Stats overview: current month total, weekly average, top category (always shows current month, independent of period filter)
+- Responsive chart labels: hidden on mobile to prevent overlap, full labels on desktop
 - Category filter dropdown with colored icons per category and hover tint
 - Desktop date picker (shadcn Calendar + Popover), native input on mobile
 - Responsive mobile-first design
@@ -53,7 +55,7 @@ ip-a1/
 │   │       ├── route.ts            # GET (list + filter) / POST (create)
 │   │       ├── [id]/route.ts       # PUT (update) / DELETE (remove)
 │   │       ├── categories/route.ts # GET/POST/PATCH categories (auto-seed)
-│   │       └── stats/route.ts      # GET aggregated stats (MongoDB aggregation)
+│   │       └── stats/route.ts      # GET aggregated stats (?from=&to= date filtering)
 │   ├── layout.tsx                  # Root layout with theme provider
 │   ├── page.tsx                    # Entry point — renders <ExpenseApp />
 │   └── globals.css                 # Tailwind config + CSS variables
@@ -69,25 +71,28 @@ ip-a1/
 │   ├── confirm-dialog.tsx          # Delete confirmation dialog
 │   ├── category-dialog.tsx         # Manage categories (rename / delete / add with color picker)
 │   ├── chart-toggle.tsx            # Pill-style chart type toggle
+│   ├── period-selector.tsx         # Period filter dropdown (1M/3M/6M/12M/All)
 │   ├── daily-chart.tsx             # Stacked bar chart (daily spending by category)
-│   ├── category-chart.tsx          # Bar / Donut chart (by category)
-│   ├── monthly-trend-chart.tsx     # Area / Bar chart (monthly trend + avg line)
+│   ├── category-chart.tsx          # Bar / Donut chart (by category, period-filtered)
+│   ├── monthly-trend-chart.tsx     # Area / Bar chart (monthly trend, period-filtered)
 │   ├── empty-state.tsx             # Empty state illustration
 │   ├── theme-provider.tsx          # next-themes wrapper
 │   └── ui/                         # shadcn/ui primitives (button, card, dialog, etc.)
 ├── hooks/
 │   ├── use-expenses.ts             # Expense CRUD hook with fetch + caching
 │   ├── use-categories.ts           # Categories hook (fetch, lookup helpers)
-│   ├── use-stats.ts                # Stats fetching hook
+│   ├── use-stats.ts                # Stats fetching hook (supports date range filtering)
 │   ├── use-media-query.ts          # Responsive media query hook
 │   └── use-debounce.ts             # Debounce utility hook
 ├── lib/
 │   ├── db.ts                       # MongoDB client singleton
-│   ├── types.ts                    # TypeScript interfaces (Expense, Category, Stats)
+│   ├── types.ts                    # TypeScript interfaces (Expense, Category, Stats, AnalyticsPeriod)
 │   ├── schemas.ts                  # Zod validation schemas
 │   ├── constants.ts                # Seed categories, color palette, currency formatting
 │   ├── category-icon-map.ts        # Icon string → React component mapping
 │   └── utils.ts                    # Tailwind merge utility
+├── scripts/
+│   └── seed.ts                     # Seed script (~360 records, May 2025 – Apr 2026)
 ├── db-export.json                  # Database export (expenses + categories)
 └── public/                         # Static assets
 ```
